@@ -1,0 +1,15 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+
+# Node (if anyone adds tooling)
+node_modules/
+package-lock.json
+
+# Lighthouse audit artifacts (regeneratable)
+lighthouse-*.json
+lighthouse-*.html

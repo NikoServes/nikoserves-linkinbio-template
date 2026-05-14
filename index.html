@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-config="title">Your Name — Links</title>
+  <meta name="description" content="">
+  <meta name="author" data-config="author" content="Your Name">
+  <!-- Set href to your live URL once deployed (e.g. https://yourdomain.com/) -->
+  <link rel="canonical" href="">
+  <link rel="icon" type="image/x-icon" href="/images/avatar.png" data-config="favicon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;600;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/brands.css">
+  <link id="theme-css" rel="stylesheet" href="/themes/nikoserves.css">
+  <!-- Add Umami tracker here once you've registered at cloud.umami.is — see README for steps -->
+</head>
+<body>
+  <div class="container">
+    <div class="column">
+      <img class="avatar avatar--rounded"
+           src="/images/avatar-placeholder.svg"
+           data-config="avatar"
+           alt="Profile photo"
+           width="160" height="160"
+           fetchpriority="high">
+      <h1 data-config="name">Your Name</h1>
+      <p data-config="handle">@yourhandle</p>
+      <span class="badge" data-config="credential"></span>
+      <p data-config="bio">Bio coming soon</p>
+      <div class="button-stack" role="navigation" data-config="sections">
+        <!-- populated at runtime by /assets/js/app.js -->
+      </div>
+      <footer>
+        <a href="/" class="footer-link">Your Name</a>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Authoritative config — mirrored verbatim in /config.json (keep both in sync) -->
+  <script type="application/json" id="app-config">
+  {
+    "title": "Your Name — Links",
+    "profile": {
+      "name": "Your Name",
+      "handle": "@yourhandle",
+      "bio": "Short tagline about you and what you do.",
+      "credential": "",
+      "avatarPath": "/images/avatar-placeholder.svg",
+      "faviconPath": "/images/avatar.png"
+    },
+    "themePath": "/themes/nikoserves.css",
+    "theme": {},
+    "sections": [
+      {
+        "label": "Start Here",
+        "links": [
+          { "icon": "tiktok", "label": "TikTok", "url": "https://tiktok.com/@yourhandle" }
+        ]
+      }
+    ],
+    "analytics": {
+      "umamiWebsiteId": ""
+    }
+  }
+</script>
+  <script src="/assets/js/app.js" defer></script>
+</body>
+</html>

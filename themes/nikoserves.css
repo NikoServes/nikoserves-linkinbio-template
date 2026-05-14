@@ -1,0 +1,8 @@
+/* themes/nikoserves.css — NikoServes dark brand palette */
+:root {
+  --theme-bg:     #0a0e17;
+  --theme-accent: #00e5ff;
+  --theme-button: linear-gradient(165deg, #0099b3 0%, #00e5ff 50%, #66f0ff 100%);
+  --theme-text:           #ffffff;
+  --theme-text-secondary: #dde2ec;
+}

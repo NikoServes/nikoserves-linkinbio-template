@@ -1,0 +1,11 @@
+/* themes/light.css — clean light-mode starter */
+:root {
+  --theme-bg:     #ffffff;
+  --theme-accent: #1F2937;
+  --theme-button: #1F2937;
+  --theme-text:           #111827;
+  --theme-text-secondary: #4b5563;
+}
+:root.theme-dark { /* override dark-mode trigger if used */
+  --theme-bg: #ffffff;
+}

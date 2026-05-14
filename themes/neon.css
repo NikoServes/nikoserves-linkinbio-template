@@ -1,0 +1,8 @@
+/* themes/neon.css — synthwave / cyberpunk neon vibe */
+:root {
+  --theme-bg:     #08001a;
+  --theme-accent: #ff00aa;
+  --theme-button: linear-gradient(165deg, #ff00aa 0%, #cc00ff 50%, #00ffe0 100%);
+  --theme-text:           #ffffff;
+  --theme-text-secondary: #c0bfff;
+}

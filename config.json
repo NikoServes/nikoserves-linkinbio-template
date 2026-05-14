@@ -1,0 +1,24 @@
+{
+  "title": "Your Name — Links",
+  "profile": {
+    "name": "Your Name",
+    "handle": "@yourhandle",
+    "bio": "Short tagline about you and what you do.",
+    "credential": "",
+    "avatarPath": "/images/avatar-placeholder.svg",
+    "faviconPath": "/images/avatar.png"
+  },
+  "themePath": "/themes/nikoserves.css",
+  "theme": {},
+  "sections": [
+    {
+      "label": "Start Here",
+      "links": [
+        { "icon": "tiktok", "label": "TikTok", "url": "https://tiktok.com/@yourhandle" }
+      ]
+    }
+  ],
+  "analytics": {
+    "umamiWebsiteId": ""
+  }
+}
