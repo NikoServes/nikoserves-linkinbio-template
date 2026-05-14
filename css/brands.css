@@ -68,3 +68,9 @@
 	--button-background: #282828;
 	--button-border: 1px solid #FFFFFF;
 }
+
+/* Phase 9.1 — .button-default fallback (LittleLink upstream, MIT) */
+.button-default {
+	--button-text: var(--theme-text, #ffffff);
+	--button-background: var(--theme-accent, #00e5ff);
+}

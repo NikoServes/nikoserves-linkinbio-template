@@ -1,0 +1,8 @@
+/* themes/aurora.css — purple → pink linear gradient backdrop, cool accents */
+:root {
+  --theme-bg:             linear-gradient(180deg, #0f0027 0%, #2d0d54 50%, #6e1976 100%);
+  --theme-accent:         #c084fc;
+  --theme-button:         linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --theme-text:           #ffffff;
+  --theme-text-secondary: #ddd6fe;
+}

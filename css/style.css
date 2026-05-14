@@ -109,6 +109,12 @@
   --spacing-xl:3rem;        /* 48px */
   --spacing-xxl:4rem;       /* 64px */
   /* Theme color tokens moved to /themes/*.css — selected by config.themePath. */
+
+  /* Phase 9.1 — UI customization tokens (all opt-in; defaults preserve current behavior) */
+  --button-radius: 0.5rem;                                          /* matches current hardcoded value */
+  --avatar-radius: 50%;                                              /* circle (current default) */
+  --font-body:    "Source Sans 3", system-ui, -apple-system, sans-serif;
+  --font-display: "Barlow Condensed", system-ui, sans-serif;
 }
 
 /* Avatar */
@@ -127,7 +133,7 @@
 /* Typography Scale */
 h1 {
 	margin:0 0 var(--spacing-m) 0;
-	font-family:"Barlow Condensed", system-ui;
+	font-family: var(--font-display, "Barlow Condensed", system-ui);
 	font-size:var(--scale-4);          /* 39px per UI-SPEC D-10 */
 	font-weight:800;
 	line-height:1.05;
@@ -137,7 +143,7 @@ h1 {
 	overflow-wrap:break-word;
 }
 body {
-	font-family:"Source Sans 3", system-ui;
+	font-family: var(--font-body, "Source Sans 3", system-ui);
 	font-size:var(--scale-1);           /* 20px */
   	line-height:1.6;
 }
@@ -204,13 +210,57 @@ a:hover {
   	background: var(--button-background, var(--theme-button));
 	color:var(--button-text,#0a0e17);
 	border:var(--button-border,none);
-	border-radius:0.5rem;
+	border-radius: var(--button-radius, 0.5rem);
 	cursor:pointer;
 	box-sizing:border-box;
 	hyphens:auto;               	/* Delete this to remove automatic hyphen on line break */
   	margin-bottom:1rem;
 	text-align:center;
 	line-height:1.3;
+}
+
+/* Phase 9.1 — Button style variants (opt-in via <body data-button-style>; default "filled") */
+body[data-button-style="outline"] .button,
+body[data-button-style="outline"] button {
+	background: transparent;
+	border: 2px solid var(--theme-accent, #00e5ff);
+	color: var(--theme-accent, #00e5ff);
+}
+body[data-button-style="soft"] .button,
+body[data-button-style="soft"] button {
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+body[data-button-style="hard"] .button,
+body[data-button-style="hard"] button {
+	box-shadow: 4px 4px 0 0 var(--theme-accent, #00e5ff);
+}
+/* "filled" is the default — no rule needed (current .button behavior) */
+
+/* Phase 9.3 — Glass button variant (frosted backdrop blur, opt-in due to mobile perf cost) */
+body[data-button-style="glass"] .button,
+body[data-button-style="glass"] button {
+	background: rgba(255, 255, 255, 0.08);
+	-webkit-backdrop-filter: blur(12px) saturate(140%);
+	        backdrop-filter: blur(12px) saturate(140%);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	box-shadow: none;
+	transform: translateZ(0);   /* GPU compositing hint (D-12) */
+}
+body[data-button-style="glass"] .button:hover,
+body[data-button-style="glass"] button:hover {
+	background: rgba(255, 255, 255, 0.14);
+	border-color: rgba(255, 255, 255, 0.30);
+	/* DO NOT animate backdrop-filter — expensive per D-12 */
+}
+
+/* Phase 9.1 — Hover lift (no-config default; honors reduced-motion preference per D-13) */
+@media (prefers-reduced-motion: no-preference) {
+	.button, button {
+		transition: transform 0.15s ease, filter 0.15s ease;
+	}
+	.button:hover, button:hover {
+		transform: translateY(-2px);
+	}
 }
 
 /* Icons
@@ -239,7 +289,7 @@ a:hover {
 
   /* Modifier for rounded avatar */
   .avatar--rounded {
-	border-radius: 50%;
+	border-radius: var(--avatar-radius, 50%);
   }
 
   /* Modifier for slightly rounded corners */
@@ -260,7 +310,7 @@ a:hover {
 	outline-offset: 2px;
   }
 :root.theme-dark body {
-	background-color: var(--theme-bg, #0a0e17);
+	background: var(--theme-bg, #0a0e17);
 	color:#ffffff;
 }
 :root.theme-dark a:not(.button) {
@@ -268,6 +318,33 @@ a:hover {
 }
 :root.theme-dark a:not(.button):hover {
 	color:#7AB8FF;
+}
+
+/* Phase 9.1 — theme-auto from LittleLink upstream (MIT) — match system preference */
+:root.theme-auto body {
+	background: #f8f8f8;
+	color: #111;
+}
+:root.theme-auto a {
+	color: #007bff;
+}
+@media (prefers-color-scheme: dark) {
+	:root.theme-auto body {
+		background: var(--theme-bg, #0a0e17);
+		color: var(--theme-text, #ffffff);
+	}
+	:root.theme-auto a {
+		color: var(--theme-accent, #00e5ff);
+	}
+}
+
+/* Phase 9.1 — theme-light from LittleLink upstream (MIT) — explicit light mode */
+:root.theme-light body {
+	background: var(--theme-bg, #ffffff);
+	color: var(--theme-text, #111111);
+}
+:root.theme-light a {
+	color: var(--theme-accent, #1F2937);
 }
 
 /* Credential Badge

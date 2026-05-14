@@ -1,6 +1,17 @@
 // /assets/js/app.js — runs on DOMContentLoaded thanks to defer attribute on <script>
 // Plain English: reads the inline JSON config block, then fills in the page.
 (function () {
+  // Phase 9.3 — Curated Google Fonts allow-list (OFL-licensed; preconnect-friendly)
+  // Keys map to opt-in `theme.font` config values. `null` (system) means no fetch.
+  const CURATED_FONTS = {
+    system:           null,
+    inter:            { family: "Inter",          weights: "400;600;700", cssName: '"Inter", system-ui, sans-serif' },
+    'dm-sans':        { family: "DM+Sans",        weights: "400;600;700", cssName: '"DM Sans", system-ui, sans-serif' },
+    fraunces:         { family: "Fraunces",       weights: "400;600;700", cssName: '"Fraunces", Georgia, serif' },
+    'space-grotesk':  { family: "Space+Grotesk",  weights: "400;600;700", cssName: '"Space Grotesk", system-ui, sans-serif' },
+    'crimson-text':   { family: "Crimson+Text",   weights: "400;600;700", cssName: '"Crimson Text", Georgia, serif' }
+  };
+
   // Step 1: find the inline JSON block
   const node = document.getElementById('app-config');
   if (!node) {
@@ -98,8 +109,36 @@
   // on the root element. Each token has a CSS fallback, so partial failure is safe.
   function applyTheme(theme) {
     const root = document.documentElement;
+    const body = document.body;
     if (theme.background) root.style.setProperty('--theme-bg',     theme.background);
-    if (theme.accent)     root.style.setProperty('--theme-accent',  theme.accent);
-    if (theme.button)     root.style.setProperty('--theme-button',  theme.button);
+    if (theme.accent)     root.style.setProperty('--theme-accent', theme.accent);
+    if (theme.button)     root.style.setProperty('--theme-button', theme.button);
+
+    // Phase 9.1 additions — bridge new theme fields (all optional, CSS fallbacks preserve current look)
+    if (theme.buttonRadius) root.style.setProperty('--button-radius', theme.buttonRadius);
+    if (theme.buttonStyle && body) body.dataset.buttonStyle = theme.buttonStyle;
+    if (theme.avatarShape) {
+      const radius = { circle: '50%', square: '0', rounded: '0.75rem' }[theme.avatarShape];
+      if (radius) root.style.setProperty('--avatar-radius', radius);
+    }
+
+    // Phase 9.3 — Font picker: inject Google Fonts <link> when a curated font is selected.
+    // theme.font === 'system' (or undefined) → no fetch, no DOM change. Default.
+    if (theme.font && CURATED_FONTS[theme.font]) {
+      const f = CURATED_FONTS[theme.font];
+      // f is null for the 'system' key; only inject when non-null.
+      if (f) {
+        const linkId = 'theme-font-css';
+        let link = document.getElementById(linkId);
+        if (!link) {
+          link = document.createElement('link');
+          link.id = linkId;
+          link.rel = 'stylesheet';
+          document.head.appendChild(link);
+        }
+        link.href = `https://fonts.googleapis.com/css2?family=${f.family}:wght@${f.weights}&display=swap`;
+        root.style.setProperty('--font-body', f.cssName);
+      }
+    }
   }
 })();

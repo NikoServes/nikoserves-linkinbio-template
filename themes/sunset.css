@@ -1,0 +1,8 @@
+/* themes/sunset.css — radial sunset glow + warm gold accents */
+:root {
+  --theme-bg:             radial-gradient(circle at 30% 20%, #ff5e62 0%, #ff9966 40%, #1a0c1d 90%);
+  --theme-accent:         #fbbf24;
+  --theme-button:         linear-gradient(135deg, #fb923c 0%, #fbbf24 100%);
+  --theme-text:           #ffffff;
+  --theme-text-secondary: #fde68a;
+}
