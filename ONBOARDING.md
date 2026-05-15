@@ -128,3 +128,7 @@ If the client's domain is on Namecheap, GoDaddy, or another registrar, add 24-48
 - **Custom domain stuck on "Verifying" for >30 minutes?** Check the DNS records Cloudflare generated. Sometimes the auto-flow doesn't catch an existing CNAME conflict — manually delete the conflicting record in the zone and Cloudflare will retry.
 - **Umami says 0 events but you clicked the links?** Your own browser probably has an ad blocker that blocks `cloud.umami.is`. Test in a fresh incognito window with no extensions. Then confirm the website ID matches in all three places (config.json, inline script, `<script data-website-id>` tag).
 - **Lighthouse Performance dropped below 90 after handoff?** The client may have asked for an extra script tag (chat widget, embed, tracker). Each one costs 5-15 points. Push back if the score matters more than the feature.
+
+## What's next?
+
+Once the client's basic setup is live and working, point them at the advanced features in [USAGE.md](USAGE.md) when they're ready to do more — spotlight CTAs, scheduled link launches, embedded YouTube/Spotify, QR codes on individual buttons, cover banner images, full-page background images, gradient headlines, and the animated themes (`aurora-animated`, `pulse`). All of these are optional and configured through `config.json` — no code changes, no rebuilds.

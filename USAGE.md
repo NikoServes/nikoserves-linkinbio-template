@@ -83,6 +83,159 @@ Two ways to update them:
 - Send the new files to your operator and ask them to swap them in.
 - Replace them yourself via GitHub. Open the file in the repo, click the **Delete** button, commit. Then upload the new file with the same name. Cloudflare Pages redeploys automatically.
 
+## Advanced customization
+
+These are extra knobs in `config.json` that your operator can turn on for you, or you can edit them yourself in GitHub if you're comfortable doing that. None of them are required — your site works fine without any of them. Anywhere a setting needs a date, write it as an ISO 8601 string like `"2026-06-01T09:00:00Z"` (the `Z` means UTC).
+
+### Spotlight one link to make it stand out
+
+Add `"spotlight": true` to any link to make it bigger, bolder, and gently pulse. Best for the one CTA you really want clicked (your newest course, a current offer, your booking link).
+
+```json
+{ "icon": "youtube", "label": "Watch the launch", "url": "https://...", "spotlight": true }
+```
+
+**Tip:** spotlight one link at a time. If everything is highlighted, nothing is.
+
+### Add a subtitle under a button
+
+Small text under the main button label. Good for promo lines like `"Free 7-day trial"` or `"Limited spots"`.
+
+```json
+{ "icon": "stripe", "label": "Buy the course", "url": "https://...", "subtitle": "Free 7-day trial" }
+```
+
+**Tip:** keep it short — one line, ~30 characters. Longer subtitles get cut off with an ellipsis.
+
+### Schedule a link to appear or disappear
+
+Hide a link until a launch date, or take it down after a deadline. Both fields are optional and you can use either or both.
+
+```json
+{
+  "icon": "cal",
+  "label": "Book a strategy call",
+  "url": "https://...",
+  "visibleFrom": "2026-06-01T09:00:00Z",
+  "visibleUntil": "2026-06-30T23:59:59Z"
+}
+```
+
+**Tip:** this uses the visitor's browser clock, so it's not bulletproof. Treat it as a convenience for sales and launches, not as access control.
+
+### Add a QR code above a button
+
+Renders a QR code image (120×120 px) directly above the link. Useful when you hand out printed cards or stickers and want people to scan straight into the link.
+
+```json
+{ "icon": "buymeacoffee", "label": "Buy me a coffee", "url": "https://...", "qrImage": "/images/qr-bmc.png" }
+```
+
+**Tip:** generate the QR code with any free online tool (qr-code-generator.com works fine), then have your operator upload the PNG to `/images/` in the repo.
+
+### Use your own icon instead of the brand default
+
+If you want your own logo on a button instead of, say, the default TikTok icon, point `iconUrl` at an image in `/images/`.
+
+```json
+{ "icon": "tiktok", "label": "My TikTok", "url": "https://...", "iconUrl": "/images/my-logo.svg" }
+```
+
+**Tip:** the button still uses the brand's color from `.button-tiktok`. Only the icon graphic changes. SVG looks best because it stays crisp at any size.
+
+### Embed a YouTube video or Spotify track under a link
+
+Add an `embed` object to render an inline player BELOW the button. Only YouTube and Spotify are supported.
+
+```json
+{
+  "icon": "youtube",
+  "label": "Watch the launch video",
+  "url": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+  "embed": { "type": "youtube", "id": "dQw4w9WgXcQ" }
+}
+```
+
+For Spotify, use `"type": "spotify"` and put the track ID (the part after `/track/` in the Spotify URL) as the `id`.
+
+**Tip:** stop at two embeds per page. Each one is a third-party iframe and they slow the page down noticeably above that.
+
+### Show a banner image above your avatar
+
+Set `profile.coverImage` to display a banner across the top of the page.
+
+```json
+{
+  "profile": {
+    "name": "Your Name",
+    "coverImage": "/images/cover-banner.jpg"
+  }
+}
+```
+
+**Tip:** aim for ~1200×400 pixels. Anything taller pushes the buttons further down the screen on mobile.
+
+### Add a full-page background image
+
+Set `theme.backgroundImage` to layer an image over the theme's solid color or gradient.
+
+```json
+{ "theme": { "backgroundImage": "/images/page-bg.jpg" } }
+```
+
+**Tip:** darkened or blurred imagery works best — text needs to stay legible. If your bio is hard to read after adding the image, pick a darker photo or skip this feature.
+
+### Gradient color on your name and section headers
+
+Add both `theme.gradientFrom` and `theme.gradientTo` (both are required to activate the gradient). Optional `theme.gradientAngle` controls the direction.
+
+```json
+{
+  "theme": {
+    "gradientFrom": "#00e5ff",
+    "gradientTo":   "#a855f7",
+    "gradientAngle": "90deg"
+  }
+}
+```
+
+**Tip:** only the big `<h1>` display name and `<h2>` section headers get the gradient — your buttons and bio text are not touched. This protects readability.
+
+### Override the text color on every button
+
+If your button gradient or background clashes with the default brand-text color, force a single text color for every button:
+
+```json
+{ "theme": { "textColor": "#ffffff" } }
+```
+
+**Tip:** test on light AND dark theme variants before keeping it — what looks great on one might be unreadable on the other.
+
+### Move the avatar crop position
+
+If your headshot's subject isn't centered, nudge the crop with `theme.avatarPosition`. The two numbers are horizontal and vertical percentages.
+
+```json
+{ "theme": { "avatarPosition": "50% 30%" } }
+```
+
+**Tip:** `"50% 50%"` is dead center (the default). `"50% 30%"` pulls the image up so the visitor sees more of the top of your photo (typically your face).
+
+### Switch to an animated theme
+
+Animated themes look fancy but cost a tiny bit of CPU. Point `themePath` at one of the animated options:
+
+```json
+{ "themePath": "/themes/aurora-animated.css" }
+```
+
+Available animated themes:
+
+- `/themes/aurora-animated.css` — slowly shifting gradient background
+- `/themes/pulse.css` — subtle pulsing accent on buttons
+
+Both honor `prefers-reduced-motion`, so visitors who've set that preference on their device see the static version automatically.
+
 ## Troubleshooting
 
 ### My site isn't loading

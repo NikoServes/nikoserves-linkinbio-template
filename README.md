@@ -12,7 +12,10 @@ A self-hosted, static link-in-bio template for creators. Fork it, drop in your c
 - Static HTML/CSS/JS — no build step, no backend
 - Cloudflare Pages free tier hosting (your only ongoing cost is the yearly domain fee)
 - Cookieless analytics: Cloudflare Web Analytics (page views) + Umami Cloud (per-link clicks)
-- Three starter themes (NikoServes / Light / Neon) — swap by editing one config field
+- Five starter themes (Light / Neon / Aurora / Aurora-animated / Pulse / and the default dark) — swap by editing one config field
+- 20+ pre-styled brand buttons (TikTok, Instagram, YouTube, LinkedIn, X, Threads, Spotify, Twitch, Discord, GitHub, Reddit, Pinterest, Snapchat, SoundCloud, Patreon, Ko-fi, Buy Me a Coffee, Cash App, Venmo, PayPal, and more)
+- Per-link power: spotlight CTAs, scheduled launches, subtitles, QR codes, embedded YouTube/Spotify, custom icon overrides
+- Theme polish: cover banner, full-page background image, gradient text on headlines, avatar crop position
 - Mobile-first; Lighthouse Performance 90+
 
 ## Quick start (60 seconds, via the hosted wizard)
@@ -41,21 +44,43 @@ Edit `config.json` directly. Schema:
     "bio": "One-line tagline shown above your links",
     "credential": "Optional badge text — supports emoji",
     "avatarPath": "/images/your-avatar.svg",
-    "faviconPath": "/images/your-favicon.png"
+    "faviconPath": "/images/your-favicon.png",
+    "coverImage": "/images/your-banner.jpg"
   },
   "themePath": "/themes/nikoserves.css",
-  "theme": { "accent": "#optional-hex-override" },
+  "theme": {
+    "accent": "#optional-hex-override",
+    "backgroundImage": "/images/your-background.jpg",
+    "textColor": "#ffffff",
+    "gradientFrom": "#00e5ff",
+    "gradientTo": "#a855f7",
+    "avatarPosition": "50% 30%"
+  },
   "sections": [
     {
       "label": "Section header text",
       "links": [
-        { "icon": "tiktok", "label": "Button text", "url": "https://..." }
+        { "icon": "tiktok", "label": "Button text", "url": "https://..." },
+        {
+          "icon": "youtube",
+          "label": "Watch the launch video",
+          "url": "https://...",
+          "spotlight": true,
+          "subtitle": "Free 7-day trial",
+          "visibleFrom": "2026-06-01T09:00:00Z",
+          "visibleUntil": "2026-06-30T23:59:59Z",
+          "iconUrl": "/images/my-logo.svg",
+          "qrImage": "/images/qr-launch.png",
+          "embed": { "type": "youtube", "id": "dQw4w9WgXcQ" }
+        }
       ]
     }
   ],
   "analytics": { "umamiWebsiteId": "your-umami-uuid-or-leave-empty" }
 }
 ```
+
+Every field except `title`, `profile.name`, `profile.handle`, `profile.bio`, `profile.avatarPath`, `profile.faviconPath`, `themePath`, and `sections[]` is optional — leave it out (or set to an empty string) and the page falls back to a sensible default.
 
 **Important:** also update the inline `<script id="app-config">` block at the bottom of `index.html` to match. The two must stay in sync — the inline copy is what the page reads on first paint (zero-latency, no fetch flash).
 
@@ -68,14 +93,14 @@ Every field in `config.json`, in detail. Required fields throw a console warning
 - **Type:** string
 - **Required:** yes
 - **What it does:** sets the page `<title>` tag (browser tab text and SEO).
-- **Example:** `"NikoServes — Links"`
+- **Example:** `"Your Name — Links"`
 
 ### `profile.name`
 
 - **Type:** string
 - **Required:** yes
 - **What it does:** display name in the big header at the top of the page.
-- **Example:** `"NikoServes"`
+- **Example:** `"Your Name"`
 
 ### `profile.handle`
 
@@ -114,6 +139,13 @@ Every field in `config.json`, in detail. Required fields throw a console warning
 - **What it does:** path to the favicon (browser tab icon). 32×32 PNG is the safe default.
 - **Example:** `"/images/avatar.png"`
 
+### `profile.coverImage`
+
+- **Type:** string (path)
+- **Required:** no
+- **What it does:** renders a banner image (~180px tall) across the top of the page, above the avatar. Recommended dimensions ~1200×400 px. Leave unset to skip the banner.
+- **Example:** `"/images/cover-banner.jpg"`
+
 ### `themePath`
 
 - **Type:** string (path)
@@ -142,6 +174,34 @@ Every field in `config.json`, in detail. Required fields throw a console warning
 - **Required:** no
 - **What it does:** runtime override for the default button background. Accepts solid colors or `linear-gradient(...)` strings. Overrides `--theme-button`.
 - **Example:** `"linear-gradient(165deg, #0099b3 0%, #00e5ff 50%, #66f0ff 100%)"`
+
+### `theme.textColor`
+
+- **Type:** string (CSS color)
+- **Required:** no
+- **What it does:** overrides the default text color on every button. Useful when your gradient or accent clashes with a brand button's recommended text color. Leave unset to use each brand's recommended color.
+- **Example:** `"#ffffff"`
+
+### `theme.backgroundImage`
+
+- **Type:** string (path)
+- **Required:** no
+- **What it does:** full-page background image, layered above `theme.background`. Use darkened or blurred imagery so text stays legible. Leave unset to use the theme's flat or gradient background.
+- **Example:** `"/images/page-bg.jpg"`
+
+### `theme.gradientFrom` + `theme.gradientTo` (+ optional `theme.gradientAngle`)
+
+- **Type:** strings (CSS colors; angle is a CSS angle like `"90deg"`)
+- **Required:** no (must set both `gradientFrom` and `gradientTo` to activate)
+- **What it does:** applies a gradient fill to the `<h1>` display name AND every `<h2>` section header. Strictly scoped to those two elements — body text and buttons are untouched, so contrast stays safe. `gradientAngle` defaults to a sensible value if omitted.
+- **Example:** `"gradientFrom": "#00e5ff"`, `"gradientTo": "#a855f7"`, `"gradientAngle": "90deg"`
+
+### `theme.avatarPosition`
+
+- **Type:** string (CSS `object-position` value — `"X% Y%"`)
+- **Required:** no
+- **What it does:** repositions the photo inside the avatar circle. Useful when your headshot's subject isn't dead-center. `"50% 30%"` pulls the image 30% from the top, centered horizontally.
+- **Example:** `"50% 30%"`
 
 ### `sections[]`
 
@@ -181,7 +241,56 @@ Every field in `config.json`, in detail. Required fields throw a console warning
 - **Type:** string (URL)
 - **Required:** yes
 - **What it does:** where the button takes the visitor when clicked. Verify each URL resolves before deploy.
-- **Example:** `"https://tiktok.com/@nikoserves"`
+- **Example:** `"https://tiktok.com/@yourhandle"`
+
+### `sections[].links[].spotlight`
+
+- **Type:** boolean
+- **Required:** no
+- **What it does:** makes one link stand out — bigger, bolder, with a subtle pulse animation. The pulse auto-disables for visitors who have `prefers-reduced-motion` enabled. Best used on one CTA per page; multiple spotlights cancel each other out visually.
+- **Example:** `"spotlight": true`
+
+### `sections[].links[].subtitle`
+
+- **Type:** string
+- **Required:** no
+- **What it does:** small line of text under the main button label (e.g. `"Free 7-day trial"` under a `"Buy course"` button). Single line — truncated with an ellipsis if it's too long for the button width.
+- **Example:** `"subtitle": "Free 7-day trial"`
+
+### `sections[].links[].iconUrl`
+
+- **Type:** string (path)
+- **Required:** no
+- **What it does:** overrides the preset brand icon SVG with a custom image (your personal logo, a product shot, etc.). The brand color from `.button-<icon>` still applies — only the icon graphic changes. Drop your image into `/images/` and reference its path here.
+- **Example:** `"iconUrl": "/images/my-logo.svg"`
+
+### `sections[].links[].visibleFrom`
+
+- **Type:** ISO 8601 datetime string
+- **Required:** no
+- **What it does:** hides the link until this date/time. Good for scheduled launches — set it once, push to GitHub today, and the link appears automatically. Uses the visitor's browser clock, so it's a convenience feature, not access control.
+- **Example:** `"visibleFrom": "2026-06-01T09:00:00Z"`
+
+### `sections[].links[].visibleUntil`
+
+- **Type:** ISO 8601 datetime string
+- **Required:** no
+- **What it does:** hides the link after this date/time. Pair it with `visibleFrom` for limited-time offers that go up and come down without you touching the repo.
+- **Example:** `"visibleUntil": "2026-06-30T23:59:59Z"`
+
+### `sections[].links[].qrImage`
+
+- **Type:** string (path)
+- **Required:** no
+- **What it does:** renders a QR code image (120×120 px, white background) directly ABOVE the button. Generate the QR elsewhere (e.g. a free online generator), drop the image into `/images/`, and reference it here. Useful for in-person events or printed materials.
+- **Example:** `"qrImage": "/images/qr-newsletter.png"`
+
+### `sections[].links[].embed`
+
+- **Type:** object `{ "type": "youtube" | "spotify", "id": "..." }`
+- **Required:** no
+- **What it does:** renders a lazy-loaded YouTube video or Spotify track embed BELOW the button. `type` must be `"youtube"` or `"spotify"` (any other value is skipped with a console warning). `id` is the YouTube video ID (the part after `?v=` in the URL) or the Spotify track ID. Keep it to at most two embeds per page — Lighthouse Performance starts to drop above that.
+- **Example:** `"embed": { "type": "youtube", "id": "dQw4w9WgXcQ" }`
 
 ### `analytics.umamiWebsiteId`
 
@@ -231,6 +340,9 @@ Change the hex values to whatever you want. The five properties cover:
 - `/themes/nikoserves.css` — dark + cyan accent (the live demo theme)
 - `/themes/light.css` — clean white + dark text
 - `/themes/neon.css` — synthwave / cyberpunk
+- `/themes/aurora.css` — cool gradient dark theme
+- `/themes/aurora-animated.css` — same look as aurora, but the background slowly shifts colors over time. Honors `prefers-reduced-motion` (visitors with that setting see the static version).
+- `/themes/pulse.css` — subtle pulsing accent that draws the eye to buttons. Also honors `prefers-reduced-motion`.
 
 To make a custom theme: copy one of the files, edit the `--theme-bg`, `--theme-accent`, `--theme-button` values, save as `/themes/yourtheme.css`, set `themePath` to its path in `config.json`. See **Writing a custom theme** above for a worked example.
 
@@ -238,7 +350,7 @@ To make a custom theme: copy one of the files, edit the `--theme-bg`, `--theme-a
 
 `/images/icons/` ships with 100+ brand SVGs (notion, tiktok, instagram, facebook, youtube, calendly, github, linkedin, mastodon, paypal, spotify, twitch, and many more).
 
-The default `config.json` and CSS only style 6 of them (the ones the live demo uses). To use a new icon:
+Roughly 20+ of these have matching color styles wired up in `/css/brands.css` out of the box — TikTok, Instagram, YouTube, Facebook, LinkedIn, X, Threads, Pinterest, Reddit, Snapchat, SoundCloud, Spotify, Twitch, GitHub, Discord, Patreon, PayPal, Venmo, Cash App, Buy Me a Coffee, Ko-fi, and a handful more. To use any other icon from the SVG library:
 
 1. Confirm `/images/icons/yourbrand.svg` exists (or add your own SVG there).
 2. Add a CSS rule to `/css/brands.css`:
@@ -264,6 +376,17 @@ The template ships with **no analytics by default**. To enable:
 
 No cookie banner required — both Umami Cloud and Cloudflare Web Analytics are cookieless.
 
+## Small UI extras (no config needed)
+
+A few things ship as plain HTML/CSS — no config field, just available when you want them.
+
+- **US flag icon** — `/images/flag-us.svg` is ready to drop into your credential badge instead of the `🇺🇸` emoji (emoji flag rendering is inconsistent across browsers and operating systems). Use it inside the `.badge` span:
+  ```html
+  <span class="badge"><img class="flag-icon" src="/images/flag-us.svg" alt=""> U.S. Army • Active Duty</span>
+  ```
+- **Bio paragraph width cap** — the `.column > p` rule in `style.css` caps the bio paragraph width to ~300px on desktop, so a long bio doesn't sprawl past the column of buttons. No action needed; it just works.
+- **Cache-buster on `style.css`** — the `<link>` tag in `index.html` points at `/css/style.css?v=3`. Whenever you ship a CSS change, bump that number (e.g. `?v=4`) so visitors' browsers fetch the new file instead of serving a stale cached copy.
+
 ## Project structure
 
 ```
@@ -279,7 +402,10 @@ No cookie banner required — both Umami Cloud and Cloudflare Web Analytics are 
 ├── themes/
 │   ├── nikoserves.css      # Default theme
 │   ├── light.css
-│   └── neon.css
+│   ├── neon.css
+│   ├── aurora.css
+│   ├── aurora-animated.css # Animated; honors prefers-reduced-motion
+│   └── pulse.css           # Pulsing accent; honors prefers-reduced-motion
 └── images/
     ├── avatar-placeholder.svg   # Replace with your photo
     ├── avatar.png               # Favicon
