@@ -1,0 +1,19 @@
+/* themes/aurora-animated.css — animated purple/pink aurora; reduced-motion respected */
+:root {
+  --theme-bg:             linear-gradient(180deg, #0f0027, #2d0d54, #6e1976, #2d0d54, #0f0027);
+  --theme-accent:         #c084fc;
+  --theme-button:         linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --theme-text:           #ffffff;
+  --theme-text-secondary: #ddd6fe;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root.theme-dark body {
+    background-size: 100% 400%;
+    animation: aurora-shift 24s ease-in-out infinite;
+  }
+}
+@keyframes aurora-shift {
+  0%, 100% { background-position: 50% 0%; }
+  50%      { background-position: 50% 100%; }
+}

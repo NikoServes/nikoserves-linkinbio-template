@@ -1,0 +1,19 @@
+/* themes/pulse.css — subtle radial pulse; cyan-on-dark */
+:root {
+  --theme-bg:             radial-gradient(circle at 50% 50%, #0a2a3a 0%, #0a0e17 70%);
+  --theme-accent:         #00e5ff;
+  --theme-button:         linear-gradient(165deg, #0099b3, #00e5ff, #66f0ff);
+  --theme-text:           #ffffff;
+  --theme-text-secondary: #a0e8ff;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root.theme-dark body {
+    background-size: 200% 200%;
+    animation: pulse-breathe 8s ease-in-out infinite;
+  }
+}
+@keyframes pulse-breathe {
+  0%, 100% { background-size: 200% 200%; }
+  50%      { background-size: 240% 240%; }
+}

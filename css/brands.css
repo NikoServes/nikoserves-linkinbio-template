@@ -74,3 +74,111 @@
 	--button-text: var(--theme-text, #ffffff);
 	--button-background: var(--theme-accent, #00e5ff);
 }
+
+/* Phase 10.2 hotfix additions — top-23 brand set per user request
+   Colors sourced from upstream LittleLink (sethcottle, MIT) where present;
+   brand-aliased to full names (linkedin, x) to match Phase 3 icon-naming pattern. */
+
+/* Buy Me a Coffee */
+.button-buy-me-a-coffee {
+	--button-text: #000000;
+	--button-background: #FFDD00;
+}
+
+/* Cash App */
+.button-cash-app {
+	--button-text: #ffffff;
+	--button-background: #00C244;
+}
+
+/* Discord */
+.button-discord {
+	--button-text: #ffffff;
+	--button-background: #5865F2;
+}
+
+/* GitHub */
+.button-github {
+	--button-text: #ffffff;
+	--button-background: #181717;
+}
+
+/* Ko-fi */
+.button-ko-fi {
+	--button-text: #ffffff;
+	--button-background: #FF5E5B;
+}
+
+/* LinkedIn (full-name alias matches Phase 3 icon-naming convention) */
+.button-linkedin {
+	--button-text: #ffffff;
+	--button-background: #0A66C2;
+}
+
+/* Patreon */
+.button-patreon {
+	--button-text: #ffffff;
+	--button-background: #FF424D;
+}
+
+/* PayPal */
+.button-paypal {
+	--button-text: #ffffff;
+	--button-background: #00457C;
+}
+
+/* Pinterest */
+.button-pinterest {
+	--button-text: #ffffff;
+	--button-background: #E60023;
+}
+
+/* Reddit */
+.button-reddit {
+	--button-text: #ffffff;
+	--button-background: #FF4500;
+}
+
+/* Snapchat */
+.button-snapchat {
+	--button-text: #000000;
+	--button-background: #FFFC00;
+}
+
+/* SoundCloud */
+.button-soundcloud {
+	--button-text: #ffffff;
+	--button-background: #FF7700;
+}
+
+/* Spotify */
+.button-spotify {
+	--button-text: #000000;
+	--button-background: #1ED760;
+}
+
+/* Threads */
+.button-threads {
+	--button-text: #ffffff;
+	--button-background: #000000;
+	--button-border: 1px solid #FFFFFF;
+}
+
+/* Twitch */
+.button-twitch {
+	--button-text: #ffffff;
+	--button-background: #9146FF;
+}
+
+/* Venmo */
+.button-venmo {
+	--button-text: #ffffff;
+	--button-background: #3D95CE;
+}
+
+/* X (Twitter rebrand) */
+.button-x {
+	--button-text: #ffffff;
+	--button-background: #000000;
+	--button-border: 1px solid #FFFFFF;
+}

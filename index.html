@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;600;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/reset.css">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=3">
   <link rel="stylesheet" href="/css/brands.css">
   <link id="theme-css" rel="stylesheet" href="/themes/nikoserves.css">
   <!-- Add Umami tracker here once you've registered at cloud.umami.is — see README for steps -->
@@ -29,7 +29,10 @@
            fetchpriority="high">
       <h1 data-config="name">Your Name</h1>
       <p data-config="handle">@yourhandle</p>
-      <span class="badge" data-config="credential"></span>
+      <span class="badge">
+        <img class="flag-icon" src="/images/flag-us.svg" alt="" width="16" height="11" aria-hidden="true">
+        <span data-config="credential"></span>
+      </span>
       <p data-config="bio">Bio coming soon</p>
       <div class="button-stack" role="navigation" data-config="sections">
         <!-- populated at runtime by /assets/js/app.js -->

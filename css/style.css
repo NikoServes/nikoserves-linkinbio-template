@@ -115,7 +115,28 @@
   --avatar-radius: 50%;                                              /* circle (current default) */
   --font-body:    "Source Sans 3", system-ui, -apple-system, sans-serif;
   --font-display: "Barlow Condensed", system-ui, sans-serif;
+
+  /* Phase 9.4 — Text color override (opt-in; unset = use each brand's --button-text default) */
+  --button-text-override: unset;
+
+  /* Phase 10.1 — Opt-in image background overlay (layered ABOVE --theme-bg). app.js sets via url("..."). */
+  --theme-bg-image: none;
 }
+
+/* Phase 10.1 — Banner / cover image (optional; configured via profile.coverImage)
+   Hidden by default; app.js adds .cover--has-image when profile.coverImage is set.
+   (We don't use :empty because inline background-image styles don't affect that pseudo-class.) */
+.cover {
+	display: none;
+	width: 100%;
+	height: 180px;
+	background-color: transparent;
+	background-size: cover;
+	background-position: center;
+	margin-bottom: 1rem;
+	border-radius: var(--button-radius, 0.5rem);
+}
+.cover.cover--has-image { display: block; }
 
 /* Avatar */
 .avatar {
@@ -123,6 +144,7 @@
 	height: 8rem;
 	border-radius: 50%;
 	object-fit: cover;
+	object-position: var(--avatar-position, center);   /* Phase 9.4 cherry-pick — full crop UI ships in 9.4 wizard */
 	background-position: center;
 	margin-bottom: var(--spacing-l);
 	margin-left: auto;
@@ -148,7 +170,9 @@ body {
   	line-height:1.6;
 }
 .container p {
-	margin:0 0 var(--spacing-xl) 0;
+	/* Cap to button column width so bio doesn't sprawl past the pills on desktop (matches mobile behavior). */
+	max-width:18.75rem;       /* 300px — matches .button width */
+	margin:0 auto var(--spacing-xl) auto;
 	font-size:var(--scale-1);
 	line-height:1.6;
 }
@@ -208,7 +232,7 @@ a:hover {
 	text-decoration:none;
 	white-space:normal;
   	background: var(--button-background, var(--theme-button));
-	color:var(--button-text,#0a0e17);
+	color: var(--button-text-override, var(--button-text, #0a0e17));   /* Phase 9.4 — opt-in text color override */
 	border:var(--button-border,none);
 	border-radius: var(--button-radius, 0.5rem);
 	cursor:pointer;
@@ -263,6 +287,74 @@ body[data-button-style="glass"] button:hover {
 	}
 }
 
+/* Phase 10.2 — Spotlight link (per-link spotlight: true; D-07)
+   Bigger, bolder, with an accent border and optional pulse animation.
+   Pulse is wrapped in reduced-motion guard so users who opt out get the static look only. */
+.button--spotlight {
+	transform: scale(1.05);
+	font-weight: 800;
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+	border: 2px solid var(--theme-accent, #00e5ff);
+	box-shadow: 0 8px 24px rgba(0, 229, 255, 0.18);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.button--spotlight {
+		animation: spotlight-pulse 3s ease-in-out infinite;
+	}
+	@keyframes spotlight-pulse {
+		0%, 100% { transform: scale(1.05); }
+		50%      { transform: scale(1.08); }
+	}
+}
+
+/* Phase 10.2 — Subtitle text under button label (per-link subtitle; D-09)
+   Renders as a small line under the main label. Single line, truncated with ellipsis. */
+.button-subtitle {
+	display: block;
+	font-size: 0.75em;
+	opacity: 0.7;
+	font-weight: 400;
+	margin-top: 0.15rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+
+/* Phase 10.2 hotfix — Per-link QR image (creator uploads QR PNG separately; displays above the button) */
+.link-qr {
+	display: block;
+	width: 120px;
+	height: 120px;
+	margin: 0.75rem auto 0.25rem;
+	border-radius: 8px;
+	background: white;
+	padding: 4px;
+	box-sizing: border-box;
+	object-fit: contain;
+}
+
+/* Phase 10.3 — Embedded media iframes (per-link embed: {...}; safelisted YouTube + Spotify only)
+   Layout space is reserved via aspect-ratio (YouTube) or fixed height (Spotify) so no CLS hit.
+   loading="lazy" on the iframe itself defers the network fetch until the viewport approaches. */
+.link-embed {
+	width: 100%;
+	margin-top: 0.5rem;
+	margin-bottom: 1rem;
+	border-radius: var(--button-radius, 0.5rem);
+	overflow: hidden;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.link-embed iframe {
+	display: block;
+	width: 100%;
+	border: none;
+	/* aspect-ratio reserves layout space (no CLS) */
+}
+.link-embed--youtube  iframe { aspect-ratio: 16 / 9; }
+.link-embed--spotify  iframe { height: 152px; }
+
 /* Icons
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .icon {
@@ -310,7 +402,10 @@ body[data-button-style="glass"] button:hover {
 	outline-offset: 2px;
   }
 :root.theme-dark body {
-	background: var(--theme-bg, #0a0e17);
+	background: var(--theme-bg-image, none), var(--theme-bg, #0a0e17);
+	background-size: cover;
+	background-position: center;
+	background-attachment: fixed;
 	color:#ffffff;
 }
 :root.theme-dark a:not(.button) {
@@ -330,7 +425,10 @@ body[data-button-style="glass"] button:hover {
 }
 @media (prefers-color-scheme: dark) {
 	:root.theme-auto body {
-		background: var(--theme-bg, #0a0e17);
+		background: var(--theme-bg-image, none), var(--theme-bg, #0a0e17);
+		background-size: cover;
+		background-position: center;
+		background-attachment: fixed;
 		color: var(--theme-text, #ffffff);
 	}
 	:root.theme-auto a {
@@ -340,7 +438,10 @@ body[data-button-style="glass"] button:hover {
 
 /* Phase 9.1 — theme-light from LittleLink upstream (MIT) — explicit light mode */
 :root.theme-light body {
-	background: var(--theme-bg, #ffffff);
+	background: var(--theme-bg-image, none), var(--theme-bg, #ffffff);
+	background-size: cover;
+	background-position: center;
+	background-attachment: fixed;
 	color: var(--theme-text, #111111);
 }
 :root.theme-light a {
@@ -352,6 +453,7 @@ body[data-button-style="glass"] button:hover {
 .badge {
 	display:inline-flex;
 	align-items:center;
+	gap:0.4rem;                                   /* spacing between flag-icon and text */
 	padding:var(--spacing-xs) var(--spacing-s);   /* 8px 16px */
 	background:rgba(10, 14, 23, 0.6);
 	border:1px solid rgba(250, 204, 21, 0.4);
@@ -363,6 +465,15 @@ body[data-button-style="glass"] button:hover {
 	letter-spacing:0.08em;
 	text-transform:uppercase;
 	margin-bottom:var(--spacing-m);
+}
+
+/* Flag icon inside .badge (replaces 🇺🇸 emoji which doesn't render on Brave/Windows) */
+.flag-icon {
+	display:block;
+	width:16px;
+	height:11px;
+	border-radius:2px;
+	flex-shrink:0;
 }
 
 .section-label {
@@ -399,7 +510,20 @@ body[data-button-style="glass"] button:hover {
 /* Button Text Color Override
     –––––––––––––––––––––––––––––––––––––––––––––––––– */
     .button:hover,button:hover {
-	color:var(--button-text);
+	color: var(--button-text-override, var(--button-text));   /* Phase 9.4 — opt-in override respected on hover */
+}
+
+/* Phase 9.4 — Gradient headlines (D-03 STRICT scope: applied via JS ONLY to h1[data-config=name] + h2.section-label) */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .gradient-text {
+    background: linear-gradient(var(--gradient-angle, 90deg),
+                                var(--gradient-from, #ff00aa),
+                                var(--gradient-to,   #00e5ff));
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
 }
 
 /* Responsive Typography
@@ -488,4 +612,15 @@ ul li {
 	font-weight:800;
 	src:url('../fonts/open-sans-v34-vietnamese_latin-ext_latin_hebrew_greek-ext_greek_cyrillic-ext_cyrillic-800.eot');
 	src:url('../fonts/open-sans-v34-vietnamese_latin-ext_latin_hebrew_greek-ext_greek_cyrillic-ext_cyrillic-800.eot?#iefix') format('embedded-opentype'),url('../fonts/open-sans-v34-vietnamese_latin-ext_latin_hebrew_greek-ext_greek_cyrillic-ext_cyrillic-800.woff2') format('woff2'),url('../fonts/open-sans-v34-vietnamese_latin-ext_latin_hebrew_greek-ext_greek_cyrillic-ext_cyrillic-800.woff') format('woff'),url('../fonts/open-sans-v34-vietnamese_latin-ext_latin_hebrew_greek-ext_greek_cyrillic-ext_cyrillic-800.ttf') format('truetype'),url('../fonts/open-sans-v34-vietnamese_latin-ext_latin_hebrew_greek-ext_greek_cyrillic-ext_cyrillic-800.svg#OpenSans') format('svg');
+}
+
+/* Phase 10.2-hotfix-2 — Defensive bio width cap.
+   The .container p rule above already sets max-width: 18.75rem, but this same-specificity
+   rule placed LATE in the cascade guarantees the cap sticks even if a future rule modifies
+   .container p. .column > p targets only the static <p> children of .column (handle + bio),
+   never the section labels (which are h2.section-label, not p). */
+.column > p {
+	max-width: 18.75rem;
+	margin-left: auto;
+	margin-right: auto;
 }
