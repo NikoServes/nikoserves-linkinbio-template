@@ -107,21 +107,21 @@ Every field in `config.json`, in detail. Required fields throw a console warning
 - **Type:** string
 - **Required:** yes
 - **What it does:** the `@handle` shown directly under the display name.
-- **Example:** `"@nikoserves"`
+- **Example:** `"@yourhandle"`
 
 ### `profile.bio`
 
 - **Type:** string
 - **Required:** yes
 - **What it does:** one-line tagline shown between the handle and the credential badge. Keep it under ~200 characters for layout.
-- **Example:** `"Your Army unc. Military tips & money moves from the inside."`
+- **Example:** `"Builder, writer, and coffee enthusiast — links to everything I do."`
 
 ### `profile.credential`
 
 - **Type:** string
 - **Required:** no (use `""` to omit the badge entirely)
-- **What it does:** small badge-style line under the bio. Supports emoji.
-- **Example:** `"🇺🇸 U.S. Army • Active Duty"`
+- **What it does:** small badge-style line under the bio. Plain text only — emoji rendering is inconsistent on Windows browsers (Chrome/Brave/Edge render country-flag emoji as letters). For a flag, use the `<img class="flag-icon">` pattern in `index.html` instead (see the `images/flag-us.svg` asset).
+- **Example:** `"Founder & CEO"`
 
 ### `profile.avatarPath`
 
@@ -342,6 +342,7 @@ Change the hex values to whatever you want. The five properties cover:
 - `/themes/neon.css` — synthwave / cyberpunk
 - `/themes/aurora.css` — cool gradient dark theme
 - `/themes/aurora-animated.css` — same look as aurora, but the background slowly shifts colors over time. Honors `prefers-reduced-motion` (visitors with that setting see the static version).
+- `/themes/sunset.css` — warm orange/pink gradient dark theme
 - `/themes/pulse.css` — subtle pulsing accent that draws the eye to buttons. Also honors `prefers-reduced-motion`.
 
 To make a custom theme: copy one of the files, edit the `--theme-bg`, `--theme-accent`, `--theme-button` values, save as `/themes/yourtheme.css`, set `themePath` to its path in `config.json`. See **Writing a custom theme** above for a worked example.
@@ -405,6 +406,7 @@ A few things ship as plain HTML/CSS — no config field, just available when you
 │   ├── neon.css
 │   ├── aurora.css
 │   ├── aurora-animated.css # Animated; honors prefers-reduced-motion
+│   ├── sunset.css          # Warm orange/pink gradient
 │   └── pulse.css           # Pulsing accent; honors prefers-reduced-motion
 └── images/
     ├── avatar-placeholder.svg   # Replace with your photo
