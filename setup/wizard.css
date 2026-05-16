@@ -449,3 +449,49 @@ code {
                                  border-left: 3px solid #10b981; margin-top: 0.5rem; }
 .import-success[hidden]       { display: none; }
 #import-live-btn { margin-top: 0.5rem; }
+
+/* Phase 14 — Avatar border controls
+   –––––––––––––––––––––––––––––––––––
+   Every conditionally-shown control gets a :not([hidden]) + [hidden] PAIR.
+   An ID selector out-specifies the UA [hidden] rule, so a bare display: on the ID
+   would defeat the hidden attribute (CLAUDE.md Mistakes Log 2026-05-13). */
+#avatarBorderModeLabel:not([hidden]),
+#avatarBorderThicknessLabel:not([hidden]),
+#avatarBorderFocalControls:not([hidden]),
+#avatarBorderAnimatedLabel:not([hidden]),
+#avatarBorderSolidLabel:not([hidden]),
+#avatarBorderGradientControls:not([hidden]) { display: block; }
+#avatarBorderModeLabel[hidden],
+#avatarBorderThicknessLabel[hidden],
+#avatarBorderFocalControls[hidden],
+#avatarBorderAnimatedLabel[hidden],
+#avatarBorderSolidLabel[hidden],
+#avatarBorderGradientControls[hidden] { display: none; }
+
+/* The animation hint is a paragraph — keep its own pair so the [hidden] guard holds. */
+#avatarBorderAnimatedHint:not([hidden]) { display: block; }
+#avatarBorderAnimatedHint[hidden]       { display: none; }
+
+/* Focal-quadrant picker — a compact 4-column grid of .ghost-btn segments. */
+.field-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+#avatarBorderFocalPicker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin: 0.4rem 0;
+}
+#avatarBorderFocalPicker .focal-seg {
+  margin: 0;
+  text-align: center;
+}
+/* Selected segment fills with the wizard accent. */
+.focal-seg[aria-pressed="true"] {
+  background: #00e5ff;
+  color: #0a0e17;
+  border-color: #00e5ff;
+}

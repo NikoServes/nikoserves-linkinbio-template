@@ -9,7 +9,9 @@
     "faviconPath": "/images/avatar.png"
   },
   "themePath": "/themes/nikoserves.css",
-  "theme": {},
+  "theme": {
+    "avatarBorder": { "style": "none" }
+  },
   "sections": [
     {
       "label": "Start Here",

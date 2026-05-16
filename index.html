@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;600;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/reset.css">
-  <link rel="stylesheet" href="/css/style.css?v=3">
+  <link rel="stylesheet" href="/css/style.css?v=4">
   <link rel="stylesheet" href="/css/brands.css">
   <link id="theme-css" rel="stylesheet" href="/themes/nikoserves.css">
   <!-- Add Umami tracker here once you've registered at cloud.umami.is — see README for steps -->
@@ -21,12 +21,16 @@
 <body>
   <div class="container">
     <div class="column">
-      <img class="avatar avatar--rounded"
-           src="/images/avatar-placeholder.svg"
-           data-config="avatar"
-           alt="Profile photo"
-           width="160" height="160"
-           fetchpriority="high">
+      <!-- Phase 14 — .avatar-wrap wrapper hosts the iridescent ::before border ring.
+           The ring is opt-in: it only renders when config theme.avatarBorder.style is set. -->
+      <div class="avatar-wrap">
+        <img class="avatar avatar--rounded"
+             src="/images/avatar-placeholder.svg"
+             data-config="avatar"
+             alt="Profile photo"
+             width="160" height="160"
+             fetchpriority="high">
+      </div>
       <h1 data-config="name">Your Name</h1>
       <p data-config="handle">@yourhandle</p>
       <span class="badge">
@@ -56,7 +60,9 @@
       "faviconPath": "/images/avatar.png"
     },
     "themePath": "/themes/nikoserves.css",
-    "theme": {},
+    "theme": {
+      "avatarBorder": { "style": "none" }
+    },
     "sections": [
       {
         "label": "Start Here",

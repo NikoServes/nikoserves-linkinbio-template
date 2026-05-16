@@ -234,6 +234,26 @@
     const bgImage = (fd.get('backgroundImage') || '').trim();
     if (bgImage) overrides.backgroundImage = bgImage;
 
+    // Phase 14 — Avatar border. Only emit overrides.avatarBorder when a style is
+    // chosen, so a default-style deploy keeps config.json clean (no-op key absent).
+    var abStyle = fd.get('avatarBorderStyle');
+    if (abStyle && abStyle !== 'none') {
+      var ab = { style: abStyle };
+      ab.mode = fd.get('avatarBorderMode') || 'full';
+      // thickness is parsed to int and clamped 2-16 (T-14-05) — a malformed
+      // slider value can never reach the live config.
+      var thick = parseInt(fd.get('avatarBorderThickness'), 10);
+      ab.thickness = isNaN(thick) ? 5 : Math.max(2, Math.min(16, thick));
+      ab.focal = fd.get('avatarBorderFocal') || 'top-right';
+      ab.animated = fd.get('avatarBorderAnimated') === 'on';
+      if (abStyle === 'solid')   ab.solidColor = fd.get('avatarBorderSolid') || '#00e5ff';
+      if (abStyle === 'gradient') {
+        ab.gradientFrom = fd.get('avatarBorderGradFrom') || '#00e5ff';
+        ab.gradientTo   = fd.get('avatarBorderGradTo')   || '#ffffff';
+      }
+      overrides.avatarBorder = ab;
+    }
+
     return overrides;
   }
 
@@ -335,6 +355,28 @@
 
     // 10. Background image URL — 1:1
     if (theme.backgroundImage) setVal('backgroundImage', theme.backgroundImage);
+
+    // 11. Phase 14 — Avatar border. Reverses the buildThemeOverrides avatarBorder
+    //     block: restore the style/mode/thickness/focal/animated/color controls.
+    var ab = theme.avatarBorder;
+    if (ab && ab.style) {
+      setVal('avatarBorderStyle', ab.style);
+      setVal('avatarBorderMode', ab.mode || 'full');
+      if (ab.thickness != null) setVal('avatarBorderThickness', String(ab.thickness));
+      setVal('avatarBorderFocal', ab.focal || 'top-right');
+      if (ab.solidColor)   setVal('avatarBorderSolid', ab.solidColor);
+      if (ab.gradientFrom) setVal('avatarBorderGradFrom', ab.gradientFrom);
+      if (ab.gradientTo)   setVal('avatarBorderGradTo', ab.gradientTo);
+      // The animated checkbox is a boolean, not a value — set .checked directly.
+      var animEl = $('[name="avatarBorderAnimated"]');
+      if (animEl) animEl.checked = !!ab.animated;
+    } else {
+      setVal('avatarBorderStyle', 'none');
+    }
+    // Fire a change event so the toggleAvatarBorder listener shows/hides the
+    // conditional controls (and the focal picker reflects the imported value).
+    var abStyleEl = $('[name="avatarBorderStyle"]');
+    if (abStyleEl) abStyleEl.dispatchEvent(new Event('change'));
   }
 
   // validateSetupConfig returns null when `cfg` is a usable main config.json, or a
@@ -573,6 +615,34 @@
     var avatarSrc = avatarCropState.imageDataUrl || '';
     var avatarPos = (cfg.theme && cfg.theme.avatarPosition) || (avatarCropState.x + '% ' + avatarCropState.y + '%');
 
+    // Phase 14 — Avatar border. Mirror the live website rendering (Plan 14-01):
+    // body data-avatar-border-* attributes + --avatar-border-* custom properties +
+    // the masked ::before ring CSS, so the preview matches the live site.
+    var ab = (cfg.theme && cfg.theme.avatarBorder) || null;
+    // Focal angle map — must match the live app.js / 14-01 contract exactly.
+    var FOCAL_ANGLES = {
+      'top': '0deg', 'top-right': '45deg', 'right': '90deg', 'bottom-right': '135deg',
+      'bottom': '180deg', 'bottom-left': '225deg', 'left': '270deg', 'top-left': '315deg'
+    };
+    var abAttrs = '';
+    var abVars = '';
+    if (ab && ab.style && ab.style !== 'none') {
+      // thickness clamped 2-16 (defence-in-depth; buildThemeOverrides also clamps).
+      var abThick = parseInt(ab.thickness, 10);
+      abThick = isNaN(abThick) ? 5 : Math.max(2, Math.min(16, abThick));
+      var abFocal = FOCAL_ANGLES[ab.focal] || '45deg';
+      abAttrs =
+        ' data-avatar-border-style="' + escapeHtml(ab.style) + '"' +
+        ' data-avatar-border-mode="' + escapeHtml(ab.mode || 'full') + '"' +
+        ' data-avatar-border-animated="' + (ab.animated ? 'true' : 'false') + '"';
+      abVars =
+        '--avatar-border-thickness:' + abThick + 'px;' +
+        '--avatar-border-focal:' + abFocal + ';' +
+        '--avatar-border-solid:' + (ab.solidColor || '#00e5ff') + ';' +
+        '--avatar-border-grad-from:' + (ab.gradientFrom || '#00e5ff') + ';' +
+        '--avatar-border-grad-to:' + (ab.gradientTo || '#ffffff') + ';';
+    }
+
     // Phase 9.3 — Font: when a curated font is selected, inject Google Fonts <link> into preview
     var fontKey = (cfg.theme && cfg.theme.font) || 'system';
     var fontDef = (fontKey !== 'system' && CURATED_FONTS_PREVIEW[fontKey]) ? CURATED_FONTS_PREVIEW[fontKey] : null;
@@ -702,11 +772,45 @@
       '  body[data-button-style="glass"] .btn   { background: rgba(255,255,255,0.08); -webkit-backdrop-filter: blur(12px) saturate(140%); backdrop-filter: blur(12px) saturate(140%); border: 1px solid rgba(255,255,255,0.18); box-shadow: none; transform: translateZ(0); }',
       // Phase 10.2 — Spotlight rule mirrored from css/style.css. Pulse is omitted in preview to keep srcdoc simple.
       '  .btn.button--spotlight { transform: scale(1.05); font-weight: 800; padding: 1rem; border: 2px solid ' + accent + '; box-shadow: 0 8px 24px rgba(0,229,255,0.18); }',
-      '</style></head><body' + bodyAttrs + '><div class="col">',
+      // Phase 14 — Avatar border ring engine. Copied verbatim from css/style.css so the
+      // preview matches the live site byte-for-byte. --avatar-radius drives the ring shape.
+      '  :root { --avatar-radius: ' + avatarRadius + '; ' + abVars + ' }',
+      '  @property --avatar-shimmer-angle { syntax: "<angle>"; inherits: false; initial-value: 215deg; }',
+      '  .avatar-wrap { position: relative; display: inline-block; border-radius: var(--avatar-radius); }',
+      '  body[data-avatar-border-style="iridescent"] .avatar-wrap::before,',
+      '  body[data-avatar-border-style="solid"] .avatar-wrap::before,',
+      '  body[data-avatar-border-style="gradient"] .avatar-wrap::before {',
+      '    content: ""; position: absolute; inset: calc(-1 * var(--avatar-border-thickness));',
+      '    border-radius: var(--avatar-radius); padding: var(--avatar-border-thickness);',
+      '    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);',
+      '    -webkit-mask-composite: xor;',
+      '    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);',
+      '    mask-composite: exclude; z-index: -1; }',
+      '  body[data-avatar-border-style="iridescent"] .avatar-wrap::before {',
+      '    background: conic-gradient(from var(--avatar-shimmer-angle),',
+      '      #ff5e9c 0%, #ff9d5c 14%, #ffe45c 28%, #7dffb0 42%,',
+      '      #5ce0ff 57%, #6c8cff 71%, #c98cff 85%, #ff5e9c 100%); }',
+      '  body[data-avatar-border-style="iridescent"][data-avatar-border-mode="directional"] .avatar-wrap::before {',
+      '    background: conic-gradient(from var(--avatar-border-focal),',
+      '      rgba(255,94,156,1) 0%, rgba(255,228,92,0.6) 28%, rgba(108,140,255,0.15) 50%,',
+      '      rgba(201,140,255,0.6) 72%, rgba(255,94,156,1) 100%); }',
+      '  body[data-avatar-border-style="solid"] .avatar-wrap::before { background: var(--avatar-border-solid); }',
+      '  body[data-avatar-border-style="gradient"] .avatar-wrap::before {',
+      '    background: conic-gradient(from 215deg, var(--avatar-border-grad-from), var(--avatar-border-grad-to), var(--avatar-border-grad-from)); }',
+      '  body[data-avatar-border-style] .avatar { box-shadow: 0 0 0 1px ' + t.bg + '; }',
+      '  @media (prefers-reduced-motion: no-preference) {',
+      '    body[data-avatar-border-animated="true"][data-avatar-border-style="iridescent"] .avatar-wrap::before {',
+      '      animation: avatar-shimmer 12s linear infinite; }',
+      '    @keyframes avatar-shimmer { to { --avatar-shimmer-angle: 575deg; } }',
+      '  }',
+      '</style></head><body' + bodyAttrs + abAttrs + '><div class="col">',
+      // Phase 14 — wrap the avatar in .avatar-wrap so the ::before ring has a host element.
+      '<div class="avatar-wrap">',
       // Phase 9.4 D-09 — Use uploaded image when available; otherwise fall back to letter-circle
       (avatarSrc
         ? '<img class="avatar" src="' + avatarSrc + '" alt="Avatar preview">'
         : '<div class="avatar">' + escapeHtml((cfg.profile.name || 'N').charAt(0).toUpperCase()) + '</div>'),
+      '</div>',
       '<h1>' + escapeHtml(cfg.profile.name) + '</h1>',
       '<p class="handle">' + escapeHtml(cfg.profile.handle) + '</p>',
       cfg.profile.credential ? '<div class="badge">' + escapeHtml(cfg.profile.credential) + '</div>' : '',
@@ -848,6 +952,64 @@
       const updateAngle = function () { angleOut.textContent = angleSlider.value + 'deg'; };
       angleSlider.addEventListener('input', updateAngle);
       updateAngle();
+    }
+
+    // Phase 14 — Avatar border thickness slider live output (copies the radius pattern).
+    var thickSlider = document.querySelector('[name="avatarBorderThickness"]');
+    var thickOut = document.getElementById('avatarBorderThicknessOut');
+    if (thickSlider && thickOut) {
+      var updateThickOut = function () { thickOut.textContent = thickSlider.value + 'px'; };
+      thickSlider.addEventListener('input', updateThickOut);
+      updateThickOut();
+    }
+
+    // Phase 14 — Avatar border conditional-control show/hide (mirrors toggleHeadline).
+    // Toggles the hidden attribute on the style/mode-dependent controls. The CSS in
+    // wizard.css uses a :not([hidden]) guard so this is safe (CLAUDE.md 2026-05-13).
+    var abStyleSelect = document.querySelector('[name="avatarBorderStyle"]');
+    var abModeSelect  = document.querySelector('[name="avatarBorderMode"]');
+    if (abStyleSelect && abModeSelect) {
+      var toggleAvatarBorder = function () {
+        var style = abStyleSelect.value;
+        var mode  = abModeSelect.value;
+        var hasStyle = style !== 'none';
+        var setHidden = function (id, show) {
+          var el = document.getElementById(id);
+          if (el) el.hidden = !show;
+        };
+        setHidden('avatarBorderModeLabel', hasStyle);
+        setHidden('avatarBorderThicknessLabel', hasStyle);
+        setHidden('avatarBorderAnimatedLabel', style === 'iridescent');
+        setHidden('avatarBorderAnimatedHint', style === 'iridescent');
+        setHidden('avatarBorderSolidLabel', style === 'solid');
+        setHidden('avatarBorderGradientControls', style === 'gradient');
+        setHidden('avatarBorderFocalControls', hasStyle && mode === 'directional');
+      };
+      abStyleSelect.addEventListener('change', toggleAvatarBorder);
+      abModeSelect.addEventListener('change', toggleAvatarBorder);
+      toggleAvatarBorder();
+    }
+
+    // Phase 14 — Focal-quadrant picker. The 8 buttons are not form inputs, so they set
+    // the hidden avatarBorderFocal input's value and trigger a preview re-render manually.
+    var focalPicker = document.getElementById('avatarBorderFocalPicker');
+    var focalInput  = document.querySelector('[name="avatarBorderFocal"]');
+    if (focalPicker && focalInput) {
+      var syncFocalActive = function () {
+        var segs = focalPicker.querySelectorAll('.focal-seg');
+        for (var i = 0; i < segs.length; i++) {
+          var isActive = segs[i].getAttribute('data-focal') === focalInput.value;
+          segs[i].setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        }
+      };
+      focalPicker.addEventListener('click', function (e) {
+        var btn = e.target.closest('.focal-seg');
+        if (!btn) return;
+        focalInput.value = btn.getAttribute('data-focal');
+        syncFocalActive();
+        try { $('#preview').srcdoc = renderPreview(buildConfig()); } catch (_e) { /* preview catches up next change */ }
+      });
+      syncFocalActive();
     }
 
     // Phase 9.4 D-09 — Avatar file upload + crop preview wiring

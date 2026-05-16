@@ -162,6 +162,155 @@
     }
   }
 
+  // === Phase 11 — Click count display (deferred fetch, silent failure) ===
+  //
+  // Plain English: AFTER the buttons are rendered, fire one fetch to /api/counts.
+  // If it returns 200 with a valid payload, find any link that has clickCount.show
+  // and append a count badge under it; also render a site-wide counter if the
+  // top-level siteCounter.show is true.
+  //
+  // Silent failure (D-09): any error — 503, network down, malformed JSON, missing
+  // config keys — falls through to do nothing. The bio + buttons stay clean.
+  // NO console.* output in this block on the live site.
+  //
+  // No animation (D-11): plain DOM insertion. The deferred fetch already creates
+  // a ~100-300ms gap; animating the appearance would risk visible CLS.
+  //
+  // Locale 'en-US' (D-10): matches Niko's American military audience tone.
+  //
+  // Per-link → event-name mapping (Plan 11-02 Task 1): derived from the same
+  // slug logic used by the Phase 4 data-umami-event attribute on line ~99 of
+  // this file. The mapping is `${section_slug}_${link.icon}`. A future
+  // clickCount.eventName field could override this; out of scope for v1.
+
+  function deferCounts() {
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(loadCounts, { timeout: 2000 });
+    } else {
+      setTimeout(loadCounts, 50);
+    }
+  }
+
+  async function loadCounts() {
+    try {
+      // Bail early if neither feature is configured — saves the fetch entirely.
+      const hasSiteCounter = !!(config.siteCounter && config.siteCounter.show);
+      const hasPerLink = config.sections.some(function (s) {
+        return s.links.some(function (l) { return l.clickCount && l.clickCount.show; });
+      });
+      if (!hasSiteCounter && !hasPerLink) return;
+
+      const res = await fetch('/api/counts', { credentials: 'omit' });
+      if (!res.ok) return;   // 503 from Plan 11-01 lands here — silent skip
+
+      const data = await res.json();
+      if (!data || typeof data !== 'object') return;
+      const events = data.events || {};
+      const pageViews = data.pageViews || 0;
+      const totalAll = data.total || 0;
+
+      // Site-wide counter
+      if (hasSiteCounter) {
+        renderSiteCounter(config.siteCounter, events, pageViews, totalAll);
+      }
+
+      // Per-link counters
+      if (hasPerLink) {
+        renderPerLinkCounts(events);
+      }
+    } catch (_err) {
+      // D-09: silent. No console output on the live site.
+    }
+  }
+
+  function renderSiteCounter(cfg, events, pageViews, totalAll) {
+    if (!cfg || !cfg.template) return;
+    const count = resolveSiteCounterSource(cfg.source, events, pageViews, totalAll);
+    if (count == null) return;
+    const formatted = formatCount(count, cfg.format);
+    const text = cfg.template.replace('{count}', formatted);
+
+    const el = document.createElement('div');
+    el.className = 'site-counter';
+    el.textContent = text;   // textContent — safe (no XSS via template injection)
+
+    // Position the element per cfg.position
+    const sectionsContainer = document.querySelector('[data-config="sections"]');
+    const bioEl = document.querySelector('[data-config="bio"]');
+    const position = cfg.position || 'above-buttons';
+
+    if (position === 'above-bio' && bioEl && bioEl.parentNode) {
+      bioEl.parentNode.insertBefore(el, bioEl);
+    } else if (position === 'below-buttons' && sectionsContainer) {
+      sectionsContainer.parentNode.insertBefore(el, sectionsContainer.nextSibling);
+    } else if (sectionsContainer) {
+      // Default + 'above-buttons'
+      sectionsContainer.parentNode.insertBefore(el, sectionsContainer);
+    }
+  }
+
+  function resolveSiteCounterSource(source, events, pageViews, totalAll) {
+    if (!source || source === 'all-links') return totalAll;
+    if (source === 'page-views') return pageViews;
+    if (source.indexOf('section:') === 0) {
+      const sectionLabel = source.slice('section:'.length);
+      const sectionSlug = sectionLabel.toLowerCase().replace(/\s+/g, '_');
+      // Sum every event whose name starts with `${sectionSlug}_`
+      let sum = 0;
+      for (const evtName in events) {
+        if (evtName.indexOf(sectionSlug + '_') === 0) sum += events[evtName] || 0;
+      }
+      return sum;
+    }
+    if (source.indexOf('link:') === 0) {
+      const eventName = source.slice('link:'.length);
+      return events[eventName] || 0;
+    }
+    return null;   // unknown source — silent skip
+  }
+
+  function renderPerLinkCounts(events) {
+    for (const section of config.sections) {
+      const sectionSlug = section.label.toLowerCase().replace(/\s+/g, '_');
+      for (const link of section.links) {
+        if (!link.clickCount || !link.clickCount.show || !link.clickCount.template) continue;
+        const eventName = sectionSlug + '_' + link.icon;
+        const count = events[eventName] || 0;
+        const formatted = formatCount(count, link.clickCount.format);
+        const text = link.clickCount.template.replace('{count}', formatted);
+
+        // Find the <a> that matches this link via data-umami-event attribute
+        const anchor = document.querySelector('a[data-umami-event="' + cssEscapeAttr(eventName) + '"]');
+        if (!anchor || !anchor.parentNode) continue;
+
+        const span = document.createElement('span');
+        span.className = 'link-count';
+        span.textContent = text;   // textContent — safe
+        anchor.parentNode.insertBefore(span, anchor.nextSibling);
+      }
+    }
+  }
+
+  function formatCount(n, format) {
+    try {
+      if (format === 'raw') {
+        return new Intl.NumberFormat('en-US').format(n);   // 1,234
+      }
+      return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(n);   // 1.2K
+    } catch (_err) {
+      // Older browsers without `notation: compact` — fall back to raw
+      return String(n);
+    }
+  }
+
+  // Minimal CSS-attribute-value escaper (no external dependency).
+  // event names are slugs ([a-z0-9_-]+) so this is mostly defensive.
+  function cssEscapeAttr(value) {
+    return String(value).replace(/["\\]/g, '\\$&');
+  }
+
+  deferCounts();
+
   // Helper: set textContent only if element exists and value is non-empty
   function setText(selector, value) {
     const el = document.querySelector(selector);
@@ -190,6 +339,34 @@
       const radius = { circle: '50%', square: '0', rounded: '0.75rem' }[theme.avatarShape];
       if (radius) root.style.setProperty('--avatar-radius', radius);
     }
+
+    // Phase 14 — Avatar iridescent border. Bridges theme.avatarBorder config into CSS:
+    // scalars become CSS custom properties, enum/mode values become body data-* attributes.
+    // All optional — an absent key (or style "none") leaves the avatar exactly as today.
+    if (theme.avatarBorder && theme.avatarBorder.style && theme.avatarBorder.style !== 'none') {
+      var ab = theme.avatarBorder;
+      if (body) {
+        body.dataset.avatarBorderStyle = ab.style;                       // none|solid|gradient|iridescent
+        body.dataset.avatarBorderMode = ab.mode || 'full';               // full|directional
+        body.dataset.avatarBorderAnimated = ab.animated ? 'true' : 'false';
+      }
+      // thickness: clamp to the 2-16px range, default 5
+      var t = parseInt(ab.thickness, 10);
+      if (isNaN(t)) t = 5;
+      t = Math.max(2, Math.min(16, t));
+      root.style.setProperty('--avatar-border-thickness', t + 'px');
+      // focal angle: 8-way name -> conic `from` angle in degrees
+      var FOCAL_ANGLE = { 'top': 0, 'top-right': 45, 'right': 90, 'bottom-right': 135,
+        'bottom': 180, 'bottom-left': 225, 'left': 270, 'top-left': 315 };
+      var focalDeg = FOCAL_ANGLE[ab.focal];
+      if (focalDeg === undefined) focalDeg = 45;
+      root.style.setProperty('--avatar-border-focal', focalDeg + 'deg');
+      // solid + gradient colors (consumed by the non-iridescent styles)
+      if (ab.solidColor)    root.style.setProperty('--avatar-border-solid', ab.solidColor);
+      if (ab.gradientFrom)  root.style.setProperty('--avatar-border-grad-from', ab.gradientFrom);
+      if (ab.gradientTo)    root.style.setProperty('--avatar-border-grad-to', ab.gradientTo);
+    }
+
     // Phase 9.4 cherry-pick — Avatar crop position (full wizard UI ships in 9.4)
     if (theme.avatarPosition) root.style.setProperty('--avatar-position', theme.avatarPosition);
 

@@ -223,6 +223,73 @@
           <p class="note">Avatar path: <code>/images/avatar.svg</code> — replace that file in your forked repo with your own image (SVG or PNG works). Favicon: <code>/images/favicon.png</code>.</p>
         </fieldset>
 
+        <!-- Phase 14 — Avatar border (iridescent ring). All controls except style are
+             conditionally shown; their hidden attribute is toggled by wizard.js. -->
+        <fieldset>
+          <legend>Avatar border</legend>
+
+          <label>Border style
+            <select name="avatarBorderStyle">
+              <option value="none">None (current default)</option>
+              <option value="solid">Solid</option>
+              <option value="gradient">Gradient</option>
+              <option value="iridescent">Iridescent</option>
+            </select>
+          </label>
+          <p class="hint">Iridescent gives a holographic shimmer. Solid and Gradient are simpler options.</p>
+
+          <!-- mode: shown only when style != none -->
+          <label id="avatarBorderModeLabel" hidden>Border mode
+            <select name="avatarBorderMode">
+              <option value="full">Full ring</option>
+              <option value="directional">Directional glow</option>
+            </select>
+          </label>
+
+          <!-- thickness: shown only when style != none -->
+          <label id="avatarBorderThicknessLabel" hidden>Border thickness (px)
+            <input name="avatarBorderThickness" type="range" min="2" max="16" value="5">
+            <output for="avatarBorderThickness" id="avatarBorderThicknessOut">5px</output>
+          </label>
+
+          <!-- focal quadrant: shown only when mode = directional -->
+          <div id="avatarBorderFocalControls" hidden>
+            <span class="field-label">Focal quadrant</span>
+            <div id="avatarBorderFocalPicker" role="radiogroup" aria-label="Focal quadrant">
+              <button type="button" class="ghost-btn focal-seg" data-focal="top">Top</button>
+              <button type="button" class="ghost-btn focal-seg" data-focal="top-right">Top-right</button>
+              <button type="button" class="ghost-btn focal-seg" data-focal="right">Right</button>
+              <button type="button" class="ghost-btn focal-seg" data-focal="bottom-right">Bottom-right</button>
+              <button type="button" class="ghost-btn focal-seg" data-focal="bottom">Bottom</button>
+              <button type="button" class="ghost-btn focal-seg" data-focal="bottom-left">Bottom-left</button>
+              <button type="button" class="ghost-btn focal-seg" data-focal="left">Left</button>
+              <button type="button" class="ghost-btn focal-seg" data-focal="top-left">Top-left</button>
+            </div>
+            <input type="hidden" name="avatarBorderFocal" value="top-right">
+          </div>
+
+          <!-- animation toggle: shown only when style = iridescent -->
+          <label id="avatarBorderAnimatedLabel" hidden>
+            <input name="avatarBorderAnimated" type="checkbox"> Animate the shimmer
+          </label>
+          <p class="hint" id="avatarBorderAnimatedHint" hidden>Visitors with reduced-motion turned on always see the static version.</p>
+
+          <!-- solid color: shown only when style = solid -->
+          <label id="avatarBorderSolidLabel" hidden>Border color
+            <input name="avatarBorderSolid" type="color" value="#00e5ff">
+          </label>
+
+          <!-- gradient colors: shown only when style = gradient -->
+          <div id="avatarBorderGradientControls" hidden>
+            <label>Gradient — start color
+              <input name="avatarBorderGradFrom" type="color" value="#00e5ff">
+            </label>
+            <label>Gradient — end color
+              <input name="avatarBorderGradTo" type="color" value="#ffffff">
+            </label>
+          </div>
+        </fieldset>
+
         <fieldset>
           <legend>Sections &amp; Links</legend>
           <div id="sections-list"></div>

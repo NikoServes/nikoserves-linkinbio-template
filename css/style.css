@@ -113,6 +113,14 @@
   /* Phase 9.1 — UI customization tokens (all opt-in; defaults preserve current behavior) */
   --button-radius: 0.5rem;                                          /* matches current hardcoded value */
   --avatar-radius: 50%;                                              /* circle (current default) */
+
+  /* Phase 14 — Avatar border ring tokens (opt-in; no ring unless body[data-avatar-border-style] is set) */
+  --avatar-border-thickness: 5px;            /* app.js overrides; min 2 max 16 */
+  --avatar-border-focal: 45deg;              /* app.js overrides from the 8-way focal picker */
+  --avatar-border-solid: var(--theme-accent, #00e5ff);
+  --avatar-border-grad-from: var(--theme-accent, #00e5ff);
+  --avatar-border-grad-to: #ffffff;
+
   --font-body:    "Source Sans 3", system-ui, -apple-system, sans-serif;
   --font-display: "Barlow Condensed", system-ui, sans-serif;
 
@@ -146,7 +154,7 @@
 	object-fit: cover;
 	object-position: var(--avatar-position, center);   /* Phase 9.4 cherry-pick — full crop UI ships in 9.4 wizard */
 	background-position: center;
-	margin-bottom: var(--spacing-l);
+	/* Phase 14 — bottom margin moved to .avatar-wrap so it isn't doubled when the ring wrapper is present */
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
@@ -623,4 +631,128 @@ ul li {
 	max-width: 18.75rem;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+/* === Phase 11 — Click count display (site-wide + per-link) ===
+   No animations (D-11): the deferred fetch already adds a ~100-300ms gap
+   between page paint and counter appearance; animating that "pop-in" risks
+   a perceived CLS. Plain text + no transition is the right move. */
+
+.site-counter {
+  /* Prominent — visually distinct from buttons; sits above or below the stack */
+  display: block;
+  margin: 1rem auto;
+  padding: 0.75rem 1.25rem;
+  max-width: max-content;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--theme-accent, #00e5ff);
+  border: 1px solid var(--theme-accent, #00e5ff);
+  border-radius: var(--button-radius, 0.5rem);
+  background: rgba(0, 229, 255, 0.06);
+  /* No animation, no transition — D-11. */
+}
+
+.link-count {
+  /* Subtle — sits as a sibling under the button without crowding the label */
+  display: block;
+  margin: 0.15rem 0 0.5rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  text-align: center;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* No animation, no transition — D-11. */
+}
+
+/* Phase 14 — Avatar iridescent border ring
+   –––––––––––––––––––––––––––––––––––––––––––––––––––
+   A config-driven decorative ring around the avatar. The ring is a position:absolute
+   ::before pseudo-element on .avatar-wrap, so it adds zero layout flow (CLS-safe).
+   It renders ONLY when app.js has set body[data-avatar-border-style]; absent = no ring. */
+
+/* Registers the animated angle so it can be tweened (a plain custom property cannot animate). */
+@property --avatar-shimmer-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 215deg;
+}
+
+/* The wrapper around the avatar <img>. Hosts the ::before ring and owns the bottom margin
+   that .avatar used to carry (moved here so it is not doubled). */
+.avatar-wrap {
+  position: relative;
+  display: inline-block;
+  border-radius: var(--avatar-radius);
+  margin-bottom: var(--spacing-l);
+}
+
+/* The ring itself — only painted when a border style is active on <body>.
+   inset is negative so the ring grows OUTWARD from the avatar box: zero layout flow. */
+body[data-avatar-border-style="iridescent"] .avatar-wrap::before,
+body[data-avatar-border-style="solid"] .avatar-wrap::before,
+body[data-avatar-border-style="gradient"] .avatar-wrap::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--avatar-border-thickness));   /* grows outward — CLS-safe */
+  border-radius: var(--avatar-radius);                /* one var drives circle / rounded / square */
+  padding: var(--avatar-border-thickness);
+  /* mask trick: outer box minus inner content-box = an annulus/frame (a hollow ring) */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;        /* Safari / iOS keyword */
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;            /* standard keyword */
+  z-index: -1;                        /* sit behind the avatar image */
+}
+
+/* Iridescent paint — the headline visual: an 8-stop conic hue wheel,
+   frozen at the @property-registered angle (animated only under no-preference, below). */
+body[data-avatar-border-style="iridescent"] .avatar-wrap::before {
+  background: conic-gradient(
+    from var(--avatar-shimmer-angle),
+    #ff5e9c 0%, #ff9d5c 14%, #ffe45c 28%, #7dffb0 42%,
+    #5ce0ff 57%, #6c8cff 71%, #c98cff 85%, #ff5e9c 100%
+  );
+}
+
+/* Mode B — directional glow. Same hue wheel, but an alpha ramp in the paint gradient
+   makes it read bright on the focal side and dim (~15%) on the opposite side.
+   `from` uses the focal angle so the bright stop sits in the chosen quadrant. */
+body[data-avatar-border-style="iridescent"][data-avatar-border-mode="directional"] .avatar-wrap::before {
+  background: conic-gradient(
+    from var(--avatar-border-focal),
+    rgba(255,94,156,1)     0%,
+    rgba(255,228,92,0.6)   28%,
+    rgba(108,140,255,0.15) 50%,
+    rgba(201,140,255,0.6)  72%,
+    rgba(255,94,156,1)     100%
+  );
+}
+
+/* Solid + gradient styles (secondary — D-07). Colors come from --avatar-border-* tokens. */
+body[data-avatar-border-style="solid"] .avatar-wrap::before {
+  background: var(--avatar-border-solid);
+}
+body[data-avatar-border-style="gradient"] .avatar-wrap::before {
+  background: conic-gradient(from 215deg, var(--avatar-border-grad-from), var(--avatar-border-grad-to), var(--avatar-border-grad-from));
+}
+
+/* Light-theme contrast separator — a 1px inset ring in the theme background colour
+   between the avatar image and the ring. Harmless on dark themes, essential on light. */
+body[data-avatar-border-style] .avatar {
+  box-shadow: 0 0 0 1px var(--theme-bg, #0a0e17);
+}
+
+/* Animation — the 12s rotation. Declared ONLY inside no-preference: a reduced-motion
+   visitor simply gets no animation rule, so the ring renders static (never blank). */
+@media (prefers-reduced-motion: no-preference) {
+  body[data-avatar-border-animated="true"][data-avatar-border-style="iridescent"] .avatar-wrap::before {
+    animation: avatar-shimmer 12s linear infinite;
+  }
+  @keyframes avatar-shimmer {
+    to { --avatar-shimmer-angle: 575deg; }   /* 215 + 360 = one full turn */
+  }
 }
