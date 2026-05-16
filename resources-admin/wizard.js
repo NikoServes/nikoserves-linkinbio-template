@@ -334,10 +334,11 @@
       reader.onload = function (ev) {
         var parsed;
         try { parsed = JSON.parse(ev.target.result); }
-        catch (ex) { showImportError('That file is not valid JSON: ' + ex.message); return; }
+        catch (ex) { showImportError('That file is not valid JSON: ' + ex.message); importInput.value = ''; return; }
         importResourcesConfig(parsed);
+        importInput.value = '';  // reset so same file can be re-selected
       };
-      reader.onerror = function () { showImportError('Could not read that file.'); };
+      reader.onerror = function () { showImportError('Could not read that file.'); importInput.value = ''; };
       reader.readAsText(file);
     });
   }
