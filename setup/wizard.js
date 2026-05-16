@@ -349,7 +349,7 @@
     }
     // Wrong-file detection FIRST — before the missing-field checks below, so the
     // operator gets the specific "that's a resources config" message.
-    if (cfg.page && cfg.schema_version) {
+    if (cfg.page && !cfg.profile) {
       return 'That looks like a resources config (config-resources.json). Load it in the resources admin wizard instead.';
     }
     if (!cfg.profile || typeof cfg.profile !== 'object') {
