@@ -40,6 +40,8 @@ Two ways:
 
 **Verify before continuing:** open the new `config.json` and confirm: title is set, profile fields are filled in, at least one section with one link exists, no `"Your Name"` or `"@yourhandle"` placeholders are left over.
 
+**Revising an existing site?** The setup wizard can also *import* a `config.json` instead of starting from a blank form. Open the wizard at `/setup` and use the **Import an existing config** fieldset at the top — either pick a saved `config.json` file or click **Load my live config** to pull the currently-deployed config straight off the live site. The form fills in, you edit it visually, then re-download. This is the easy path for a handoff to a new operator or a round of edits months later — no need to rebuild the whole form by hand.
+
 ## Step 3 — Replace images
 
 Exactly two files to swap in `/images/`:

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Resources Admin — Link-in-Bio Template</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <link rel="stylesheet" href="/resources-admin/wizard.css">
+</head>
+<body class="wizard-body">
+
+  <!-- Gate screen (interim client-side hash gate; Plan 12-06 replaces with CF Access) -->
+  <section id="gate-screen" aria-label="Access gate">
+    <h1>Resources Admin — Gate</h1>
+    <p>Enter the passphrase. (Interim: Plan 12-06 replaces with Cloudflare Access.)</p>
+    <input id="gate-input" type="password" autocomplete="off" placeholder="Passphrase">
+    <button id="gate-submit" type="button">Unlock</button>
+    <p id="gate-error" hidden>Invalid passphrase.</p>
+  </section>
+
+  <!-- Wizard app (hidden until gate passes) -->
+  <main id="wizard-app" hidden>
+
+    <!-- Mobile-only sticky jump-to-preview anchor (Phase 10.2 hotfix pattern) -->
+    <nav class="wizard-mobile-nav" aria-label="Quick nav">
+      <a href="#preview-pane">Jump to preview ↓</a>
+    </nav>
+
+    <div class="wizard-grid">
+
+      <!-- ===== Form pane ===== -->
+      <section class="wizard-form" aria-label="Form">
+
+        <h1>Resources — Admin Wizard</h1>
+        <p class="wizard-intro">Edit content for /resources/. Download the JSON, commit it to <code>config-resources.json</code> + the inline <code>#resources-config</code> block in <code>resources/index.html</code> (TECH-07 sync).</p>
+
+        <fieldset class="wizard-fieldset" data-field="import">
+          <legend>Import a config file</legend>
+          <p>Load a <code>config-resources.json</code> file from disk to edit it visually. This replaces
+             everything currently in the form. (The live site config already loaded automatically.)</p>
+          <label>Load a config-resources.json file
+            <input id="import-file" type="file" accept=".json,application/json">
+          </label>
+          <p id="import-error" class="import-error" hidden role="alert"></p>
+          <p id="import-success" class="import-success" hidden role="status"></p>
+        </fieldset>
+
+        <fieldset class="wizard-fieldset" data-field="page">
+          <legend>Page</legend>
+          <label>Title <input name="page-title" type="text" required></label>
+          <label>Subtitle <input name="page-subtitle" type="text"></label>
+          <label>Cover image path <input name="page-coverImage" type="text" placeholder="/images/cover-resources.jpg"></label>
+          <label>Intro icon (emoji) <input name="page-intro-icon" type="text" placeholder="🫡"></label>
+          <label>Intro text <textarea name="page-intro-text" rows="3"></textarea></label>
+        </fieldset>
+
+        <fieldset class="wizard-fieldset" data-field="sections">
+          <legend>Sections</legend>
+          <div id="sections-list"><!-- JS appends section blocks here --></div>
+          <button type="button" id="add-section" class="ghost-btn">+ Add section</button>
+        </fieldset>
+
+        <fieldset class="wizard-fieldset" data-field="support">
+          <legend>Support footer</legend>
+          <label><input name="support-show" type="checkbox" checked> Show support section</label>
+          <label>Title <input name="support-title" type="text"></label>
+          <label>Button label <input name="support-buttonLabel" type="text"></label>
+          <label>URL <input name="support-url" type="url"></label>
+          <label>QR image path <input name="support-qrImage" type="text" placeholder="/images/qr-bmc.webp"></label>
+        </fieldset>
+
+        <div class="wizard-actions">
+          <button type="button" id="download-config" class="primary-btn">Download config-resources.json</button>
+          <button type="button" id="refresh-preview" class="ghost-btn">Refresh preview</button>
+        </div>
+      </section>
+
+      <!-- ===== Preview pane ===== -->
+      <aside class="wizard-preview" id="preview-pane" aria-label="Live preview">
+        <h2>Preview</h2>
+        <iframe id="preview-iframe" title="Live preview of /resources/"></iframe>
+      </aside>
+
+    </div>
+
+    <!-- Template: one section block (cloned by JS, NOT rendered until "Add section" clicked) -->
+    <template id="tpl-section">
+      <div class="wizard-section">
+        <label>Section label <input name="section-label" type="text" required></label>
+        <label>View type
+          <select name="section-viewType">
+            <option value="list">List (default)</option>
+            <option value="kanban">Kanban</option>
+            <option value="embed-grid">Embed grid</option>
+          </select>
+        </label>
+        <div class="wizard-resources-list"><!-- JS appends resource blocks here --></div>
+        <button type="button" class="ghost-btn add-resource">+ Add resource</button>
+        <button type="button" class="ghost-btn remove-section">× Remove section</button>
+      </div>
+    </template>
+
+    <!-- Template: one resource block (cloned by JS) -->
+    <template id="tpl-resource">
+      <div class="wizard-resource">
+        <div class="wizard-resource__primary">
+          <input name="resource-icon" type="text" placeholder="Emoji (e.g. 🎓)" maxlength="4">
+          <input name="resource-title" type="text" placeholder="Title" required>
+          <input name="resource-url" type="url" placeholder="https://..." required>
+          <button type="button" class="ghost-btn remove-resource">×</button>
+        </div>
+        <div class="wizard-resource__extras">
+          <input name="resource-description" type="text" placeholder="Description (optional)">
+          <input name="resource-thumbnail" type="text" placeholder="Thumbnail path (optional)">
+          <label class="wizard-embed-controls">
+            Embed
+            <select name="resource-embed-type">
+              <option value="none">None</option>
+              <option value="tiktok">TikTok</option>
+              <option value="instagram">Instagram</option>
+            </select>
+            <input name="resource-embed-id" type="text" placeholder="Embed id" hidden>
+            <label class="wizard-embed-fallback" hidden>
+              <input name="resource-embed-fallback" type="checkbox"> Fallback to thumbnail
+            </label>
+          </label>
+        </div>
+      </div>
+    </template>
+  </main>
+
+  <script defer src="/resources-admin/wizard.js"></script>
+</body>
+</html>

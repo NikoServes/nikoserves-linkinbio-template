@@ -1,0 +1,294 @@
+/*
+ * /resources-admin/ wizard styles
+ *
+ * Independent from /resources/ runtime CSS. Self-contained palette so the
+ * wizard works even before the operator's theme is fully loaded.
+ *
+ * Patterns carried from setup/wizard.css:
+ *  - Defensive :not([hidden]) on any rule that sets display on an element
+ *    that also uses the HTML hidden attribute (CLAUDE.md mistakes log entry 2026-05-13).
+ *  - Split-pane on desktop (form left + preview right); stacked on mobile (≤ 900px).
+ *  - Sticky "Jump to preview" anchor visible only on mobile (Phase 10.2 hotfix pattern).
+ */
+
+/* ===== Base ============================================================== */
+.wizard-body {
+  margin: 0;
+  background: #0a0e17;
+  color: #e5e7eb;
+  font-family: "Source Sans 3", system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ===== Gate screen (interim hash gate; Plan 12-06 replaces with CF Access) ===== */
+#gate-screen:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+#gate-screen[hidden] { display: none; }
+
+#gate-screen h1 {
+  font-family: "Barlow Condensed", system-ui, sans-serif;
+  font-size: 2rem;
+  text-transform: uppercase;
+  color: #00e5ff;
+  margin: 0 0 1rem;
+}
+#gate-screen p { max-width: 28rem; margin: 0 0 1.5rem; opacity: 0.8; }
+#gate-input {
+  width: 100%;
+  max-width: 22rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  background: #1a1f2e;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+#gate-submit {
+  padding: 0.75rem 2rem;
+  background: linear-gradient(165deg, #0099b3 0%, #00e5ff 50%, #66f0ff 100%);
+  color: #0a0e17;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+#gate-error:not([hidden]) {
+  display: block;
+  color: #f87171;
+  margin-top: 1rem;
+}
+#gate-error[hidden] { display: none; }
+
+/* ===== Wizard app shell ================================================== */
+#wizard-app:not([hidden]) { display: block; }
+#wizard-app[hidden]       { display: none; }
+
+.wizard-mobile-nav {
+  display: none;     /* desktop hides */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #0a0e17;
+  border-bottom: 1px solid #1f2937;
+  padding: 0.5rem 1rem;
+}
+.wizard-mobile-nav a {
+  display: inline-block;
+  color: #00e5ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.wizard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);  /* 50/50 split on desktop */
+  gap: 1rem;
+  padding: 1rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ===== Form pane ========================================================= */
+.wizard-form {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 2rem);
+}
+.wizard-form h1 {
+  font-family: "Barlow Condensed", system-ui, sans-serif;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  color: #00e5ff;
+  margin: 0 0 0.5rem;
+}
+.wizard-form .wizard-intro {
+  font-size: 0.875rem;
+  opacity: 0.7;
+  margin: 0 0 1.5rem;
+}
+.wizard-form .wizard-intro code {
+  background: #1f2937;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+/* Fieldsets */
+.wizard-fieldset {
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 0 0 1.5rem;
+  background: #0f1623;
+}
+.wizard-fieldset > legend {
+  padding: 0 0.5rem;
+  font-weight: 700;
+  color: #00e5ff;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Labels + inputs */
+.wizard-fieldset label {
+  display: block;
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: #d1d5db;
+}
+.wizard-fieldset input[type="text"],
+.wizard-fieldset input[type="password"],
+.wizard-fieldset input[type="url"],
+.wizard-fieldset textarea,
+.wizard-fieldset select {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background: #1a1f2e;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  color: #fff;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.wizard-fieldset input[type="text"]:focus,
+.wizard-fieldset textarea:focus,
+.wizard-fieldset select:focus {
+  outline: none;
+  border-color: #00e5ff;
+}
+.wizard-fieldset input[type="checkbox"] {
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+.wizard-fieldset textarea { resize: vertical; min-height: 4rem; }
+
+/* Nested section / resource fieldsets */
+.section-node, .resource-node {
+  border: 1px dashed #374151;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+  background: #111827;
+}
+.resource-node {
+  margin-left: 1rem;
+  border-style: solid;
+  border-color: #1f2937;
+  background: #0a0e17;
+}
+
+/* Conditional embed-id input (defensive :not([hidden]) per Mistakes Log) */
+.embed-id-wrap:not([hidden]) { display: block; }
+.embed-id-wrap[hidden]       { display: none; }
+
+/* Action buttons (add/remove section, add/remove resource, download) */
+.wizard-form button {
+  background: #1f2937;
+  color: #00e5ff;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  font-family: inherit;
+  margin: 0.25rem 0.5rem 0.25rem 0;
+}
+.wizard-form button:hover { border-color: #00e5ff; }
+.wizard-form button.primary,
+.wizard-form #download-config {
+  background: linear-gradient(165deg, #0099b3 0%, #00e5ff 50%, #66f0ff 100%);
+  color: #0a0e17;
+  font-weight: 700;
+  border: none;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+}
+.wizard-form button.remove-section,
+.wizard-form button.remove-resource {
+  background: transparent;
+  color: #f87171;
+  border-color: #7f1d1d;
+}
+.wizard-form button.remove-section:hover,
+.wizard-form button.remove-resource:hover {
+  background: #7f1d1d;
+  color: #fff;
+}
+
+/* ===== Preview pane ====================================================== */
+.wizard-preview {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 2rem);
+}
+.wizard-preview h2 {
+  font-size: 1rem;
+  margin: 0 0 0.75rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#refresh-preview {
+  background: #1f2937;
+  color: #00e5ff;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+#preview-iframe {
+  flex: 1;
+  width: 100%;
+  border: 1px solid #1f2937;
+  border-radius: 4px;
+  background: #0a0e17;
+  min-height: 60vh;
+}
+
+/* ===== Responsive: stack on mobile ======================================= */
+@media (max-width: 900px) {
+  .wizard-grid {
+    grid-template-columns: 1fr;
+    padding: 0.5rem;
+  }
+  .wizard-form,
+  .wizard-preview { max-height: none; }
+  .wizard-mobile-nav { display: block; }
+  #preview-iframe { min-height: 80vh; }
+}
+
+/* ===== Phase 13 — config import controls ===== */
+.import-error:not([hidden])   { display: block; color: #92400e; background: #fef3c7;
+                                 padding: 0.5rem 0.75rem; border-radius: 4px;
+                                 border-left: 3px solid #f59e0b; margin-top: 0.5rem; }
+.import-error[hidden]         { display: none; }
+.import-success:not([hidden]) { display: block; color: #065f46; background: #d1fae5;
+                                 padding: 0.5rem 0.75rem; border-radius: 4px;
+                                 border-left: 3px solid #10b981; margin-top: 0.5rem; }
+.import-success[hidden]       { display: none; }

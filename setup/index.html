@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Setup Wizard — Link-in-Bio Template</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;600;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/setup/wizard.css">
+</head>
+<body>
+
+  <!-- Gate screen: visible by default; wizard.js hides it after a valid code is entered. -->
+  <section id="gate-screen">
+    <div class="gate-card">
+      <h2>Setup Wizard — Access Required</h2>
+      <p>Enter your access code to continue. Codes are issued after onboarding.<br>
+         Contact the site owner if you need one.</p>
+      <form id="gate-form">
+        <label for="access-code">Access code</label>
+        <input id="access-code" name="access-code" type="text" minlength="8" required autocomplete="off" placeholder="at least 8 characters">
+        <button type="submit">Unlock wizard</button>
+        <p id="gate-error" hidden role="alert">Invalid code. Try again.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Wizard app — hidden until gate-form unlocks it. -->
+  <div id="wizard-app" hidden>
+    <header>
+      <h1>Link-in-Bio Setup Wizard</h1>
+      <p class="tagline">Fill the form. Watch the preview. Download <code>config.json</code>. Drop it in your repo.</p>
+    </header>
+
+    <main class="wizard-grid">
+
+      <!-- Phase 10.2 hotfix — Mobile-only "jump to preview" shortcut. CSS hides this above 900px. -->
+      <a href="#preview" class="jump-to-preview" id="jumpToPreview">↓ Jump to preview</a>
+
+      <form id="wizard-form" autocomplete="off">
+
+        <fieldset>
+          <legend>Import an existing config <span class="hint">(optional — load to edit)</span></legend>
+          <p class="note">Already have a <code>config.json</code>? Load it here to edit it visually, then
+             re-download. This replaces everything currently in the form.</p>
+          <label>Load a config.json file
+            <input id="import-file" type="file" accept=".json,application/json">
+          </label>
+          <button type="button" id="import-live-btn" class="ghost-btn">Load my live config</button>
+          <p id="import-error" class="import-error" hidden role="alert"></p>
+          <p id="import-success" class="import-success" hidden role="status"></p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Identity</legend>
+
+          <label>Name
+            <input name="name" type="text" required placeholder="Your Name">
+          </label>
+
+          <label>Handle
+            <input name="handle" type="text" required placeholder="@yourhandle">
+          </label>
+
+          <label>Bio
+            <textarea name="bio" maxlength="200" rows="3" placeholder="Short tagline about you and what you do"></textarea>
+          </label>
+
+          <label>Credential badge <span class="hint">(optional, supports emoji)</span>
+            <input name="credential" type="text" placeholder="🇺🇸 U.S. Army • Active Duty">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Brand</legend>
+
+          <label>Theme
+            <select name="themePath">
+              <option value="/themes/nikoserves.css">NikoServes (dark + cyan)</option>
+              <option value="/themes/light.css">Light (clean white)</option>
+              <option value="/themes/neon.css">Neon (synthwave)</option>
+              <option value="/themes/aurora-animated.css">Aurora Animated</option>
+              <option value="/themes/pulse.css">Pulse</option>
+            </select>
+          </label>
+
+          <label>Accent color override <span class="hint">(optional — overrides theme accent)</span>
+            <input name="accentColor" type="color" value="#00e5ff">
+          </label>
+
+          <!-- Phase 9.2 — UI customization controls -->
+
+          <label>Background type
+            <select name="bgType">
+              <option value="flat">Flat color (current default)</option>
+              <option value="linear">Linear gradient (top → bottom)</option>
+              <option value="radial">Radial gradient (centered glow)</option>
+              <option value="aurora">Aurora preset (purple → pink)</option>
+              <option value="sunset">Sunset preset (orange radial)</option>
+            </select>
+          </label>
+
+          <label>Background color stop A
+            <input name="bgColorA" type="color" value="#0a0e17">
+          </label>
+          <label>Background color stop B <span class="hint">(used by gradients)</span>
+            <input name="bgColorB" type="color" value="#1a2244">
+          </label>
+
+          <!-- Phase 10.1 — Image background + cover banner (optional; layered on top of theme background) -->
+          <label>Background image URL <span class="hint">(optional path; e.g. /images/bg.jpg)</span>
+            <input name="backgroundImage" type="text" placeholder="/images/your-bg.jpg">
+          </label>
+          <label>Banner / cover image URL <span class="hint">(optional; ~1200x300 recommended)</span>
+            <input name="coverImage" type="text" placeholder="/images/cover.jpg">
+          </label>
+
+          <label>Button style
+            <select name="buttonStyle">
+              <option value="filled">Filled (current default)</option>
+              <option value="outline">Outline (transparent + accent border)</option>
+              <option value="soft">Soft shadow</option>
+              <option value="hard">Hard shadow (neobrutalist)</option>
+              <option value="glass">Glass (frosted — opt-in, mobile perf cost)</option>
+            </select>
+          </label>
+
+          <label>Button shape
+            <select name="buttonRadius">
+              <option value="0.5rem">Rounded (current default — 8px)</option>
+              <option value="0">Square (0px)</option>
+              <option value="9999px">Pill (fully rounded)</option>
+              <option value="custom">Custom px ↓</option>
+            </select>
+          </label>
+          <label id="buttonRadiusCustomLabel" hidden>Custom button corner radius (px)
+            <input name="buttonRadiusCustom" type="range" min="0" max="32" value="12">
+            <output for="buttonRadiusCustom" id="buttonRadiusCustomOut">12px</output>
+          </label>
+
+          <label>Avatar shape
+            <select name="avatarShape">
+              <option value="circle">Circle (current default)</option>
+              <option value="rounded">Rounded square</option>
+              <option value="square">Square</option>
+            </select>
+          </label>
+
+          <label>Font
+            <select name="font">
+              <option value="system">System (fastest — current default)</option>
+              <option value="inter">Inter (clean sans-serif)</option>
+              <option value="dm-sans">DM Sans (warm sans-serif)</option>
+              <option value="fraunces">Fraunces (modern serif)</option>
+              <option value="space-grotesk">Space Grotesk (geometric)</option>
+              <option value="crimson-text">Crimson Text (classic serif)</option>
+            </select>
+          </label>
+
+          <!-- Phase 9.4 — Headline color (D-03 STRICT scope: display name + section headers only) -->
+          <label>Headline color
+            <select name="headlineMode">
+              <option value="solid">Solid (current default)</option>
+              <option value="gradient">Gradient (rainbow / two-color)</option>
+            </select>
+          </label>
+          <label id="headlineSolidLabel">Headline solid color <span class="hint">(opt-in — leave default for theme color)</span>
+            <input name="headlineSolid" type="color" value="#ffffff">
+          </label>
+          <div id="headlineGradientControls" hidden>
+            <label>Gradient — start color
+              <input name="gradientFrom" type="color" value="#ff00aa">
+            </label>
+            <label>Gradient — end color
+              <input name="gradientTo" type="color" value="#00e5ff">
+            </label>
+            <label>Gradient angle (deg)
+              <input name="gradientAngle" type="range" min="0" max="360" value="90">
+              <output for="gradientAngle" id="gradientAngleOut">90deg</output>
+            </label>
+            <p class="note headline-gradient-warning">
+              <strong>Heads up:</strong> Gradient headlines can hurt readability — especially over busy backgrounds. Preview carefully and test in light mode too. Applies to display name + section headers only; never to buttons or body text.
+            </p>
+          </div>
+
+          <!-- Phase 9.4 — Button text color override (D-02) -->
+          <label>Button text color override <span class="hint">(optional — overrides each brand's default text color)</span>
+            <input name="buttonTextColor" type="color" value="#0a0e17">
+          </label>
+
+          <!-- Phase 9.4 D-09 — Avatar crop preview (image stays session-local; only position downloads) -->
+          <fieldset class="subfieldset">
+            <legend>Avatar crop preview <span class="hint">(image is session-only; not saved in config.json)</span></legend>
+
+            <label>Upload a preview of your avatar
+              <input id="avatarPreviewFile" name="avatarPreviewFile" type="file" accept="image/*">
+            </label>
+
+            <div id="avatarCropContainer" hidden>
+              <p class="hint">Drag the dot to set the focal point. The circle shows what visitors will see.</p>
+              <div id="avatarCropThumb">
+                <img id="avatarCropImg" alt="Crop preview">
+                <div id="avatarCropDot" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="100" aria-label="Focal point"></div>
+              </div>
+              <output id="avatarCropOut">center (50%, 50%)</output>
+
+              <!-- Phase 9.4 D-11 — Compressed image download (separate from config.json) -->
+              <div id="avatarCompressedDownload" hidden>
+                <a id="avatarCompressedLink" class="ghost-btn" download>Download compressed image</a>
+                <small id="avatarCompressedSize"></small>
+              </div>
+            </div>
+
+            <p class="note">
+              <strong>Two steps:</strong> (1) Use this preview to dial in the crop. (2) After downloading config.json,
+              save the <em>same image</em> (the compressed version above is ready-to-use) into your forked repo at
+              <code>/images/your-avatar.jpg</code> and update <code>profile.avatarPath</code> in config.json to match.
+            </p>
+          </fieldset>
+
+          <p class="note">Avatar path: <code>/images/avatar.svg</code> — replace that file in your forked repo with your own image (SVG or PNG works). Favicon: <code>/images/favicon.png</code>.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Sections &amp; Links</legend>
+          <div id="sections-list"></div>
+          <button type="button" id="add-section" class="ghost-btn">+ Add section</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Site counter <span class="hint">(optional — top-of-page social proof banner)</span></legend>
+
+          <label>
+            <input name="sitecounter-show" type="checkbox"> Show a site-wide counter
+          </label>
+
+          <div id="sitecounter-controls" hidden>
+            <label>Template <span class="hint">(one {count} placeholder)</span>
+              <input name="sitecounter-template" type="text"
+                     placeholder="e.g. Over {count} Battle Buddies Helped"
+                     maxlength="120">
+            </label>
+
+            <label>Source
+              <select name="sitecounter-source">
+                <option value="all-links">All link clicks (sum across every link)</option>
+                <option value="page-views">Page views (visits to this page)</option>
+                <option value="section:Resources">Section: Resources</option>
+                <option value="section:Social Media Content">Section: Social Media Content</option>
+                <option value="section:Support Me">Section: Support Me</option>
+                <option value="section:Work with Me">Section: Work with Me</option>
+                <!-- Note: section: options reflect Niko's default section names.
+                     Creators with custom section labels will need to hand-edit config.json or
+                     use the link event name override below. Future enhancement: derive these
+                     options dynamically from the currently-configured sections. -->
+              </select>
+            </label>
+
+            <label>Or specify a single-link event name <span class="hint">(optional — overrides Source)</span>
+              <input name="sitecounter-link-event" type="text"
+                     placeholder="e.g. resources_notion">
+            </label>
+
+            <label>Position
+              <select name="sitecounter-position">
+                <option value="above-buttons">Above the buttons (default)</option>
+                <option value="above-bio">Above the bio text</option>
+                <option value="below-buttons">Below the buttons</option>
+              </select>
+            </label>
+
+            <label>Number format
+              <select name="sitecounter-format">
+                <option value="compact">Compact (1.2K)</option>
+                <option value="raw">Raw (1,234)</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Analytics</legend>
+
+          <label>Umami website ID <span class="hint">(UUID from cloud.umami.is)</span>
+            <input name="umamiWebsiteId" type="text" pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" placeholder="e.g. 00000000-0000-0000-0000-000000000000">
+          </label>
+        </fieldset>
+
+        <button type="submit" id="download-btn">Download config.json</button>
+
+      </form>
+
+      <iframe id="preview" title="Live preview of your link-in-bio page" sandbox="allow-same-origin"></iframe>
+
+    </main>
+
+    <!-- Templates (cloned by JS) -->
+    <template id="section-template">
+      <div class="section-row">
+        <label>Section label
+          <input name="section-label" type="text" required placeholder="e.g. Start Here">
+        </label>
+        <div class="links-list"></div>
+        <button type="button" class="ghost-btn add-link">+ Add link</button>
+        <button type="button" class="ghost-btn remove-section">× Remove section</button>
+      </div>
+    </template>
+
+    <template id="link-template">
+      <div class="link-row">
+        <!-- Phase 10.2 hotfix — Primary row: the original 4 inputs (icon/label/url/remove)
+             stay in a 4-column grid; on mobile they collapse to a single column. -->
+        <div class="link-row-primary">
+          <select name="link-icon">
+            <option value="tiktok">TikTok</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="youtube">YouTube</option>
+            <option value="x">X / Twitter</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="snapchat">Snapchat</option>
+            <option value="discord">Discord</option>
+            <option value="twitch">Twitch</option>
+            <option value="spotify">Spotify</option>
+            <option value="soundcloud">SoundCloud</option>
+            <option value="reddit">Reddit</option>
+            <option value="threads">Threads</option>
+            <option value="pinterest">Pinterest</option>
+            <option value="github">GitHub</option>
+            <option value="notion">Notion</option>
+            <option value="calendly">Calendly</option>
+            <option value="buy-me-a-coffee">Buy Me a Coffee</option>
+            <option value="paypal">PayPal</option>
+            <option value="patreon">Patreon</option>
+            <option value="ko-fi">Ko-fi</option>
+            <option value="cash-app">Cash App</option>
+            <option value="venmo">Venmo</option>
+            <option value="amazon-wishlist">Amazon Wishlist</option>
+            <option value="resources">Resources (generic)</option>
+          </select>
+          <input name="link-label" type="text" required placeholder="Label (e.g. TikTok)">
+          <input name="link-url" type="url" required placeholder="https://...">
+          <button type="button" class="ghost-btn remove-link">×</button>
+        </div>
+
+        <!-- Phase 10.2 — Per-link power features (all optional; default = current behavior).
+             Phase 10.2 hotfix: wrapped in .link-extras-row so they flow on their own line(s)
+             instead of overflowing the primary 4-column grid on mobile. -->
+        <div class="link-extras-row">
+          <label>
+            <input name="link-spotlight" type="checkbox"> Spotlight
+          </label>
+          <input name="link-iconUrl"      type="text"           placeholder="Icon URL">
+          <input name="link-subtitle"     type="text"           placeholder="Subtitle" maxlength="60">
+          <input name="link-visibleFrom"  type="datetime-local" title="Visible from (optional — uses visitor's clock; not access control)">
+          <input name="link-visibleUntil" type="datetime-local" title="Visible until (optional — uses visitor's clock; not access control)">
+          <input name="link-qrImage"      type="text"           placeholder="QR image path (optional)">
+
+          <!-- Phase 10.3 — Embedded media (YouTube or Spotify; lazy-loaded; safelisted types only).
+               Leave embed type as "None" to keep this link as a plain button. -->
+          <label class="link-embed-controls">
+            Embed:
+            <select name="link-embed-type" title="Embed type (None = plain button)">
+              <option value="">None</option>
+              <option value="youtube">YouTube</option>
+              <option value="spotify">Spotify</option>
+            </select>
+          </label>
+          <input name="link-embed-id" type="text" placeholder="Embed ID (e.g. dQw4w9WgXcQ)" title="YouTube video ID or Spotify track ID">
+
+          <!-- Phase 11 — Click count display on this link (opt-in).
+               Toggle on, set a template with one {count} placeholder, choose compact (1.2K) or raw (1,234). -->
+          <label class="link-clickcount-controls">
+            <input name="link-clickcount-show" type="checkbox"> Show click count
+          </label>
+          <input name="link-clickcount-template" type="text"
+                 placeholder="e.g. Over {count} coffees bought"
+                 title="One {count} placeholder. Renders as a small count line under this button."
+                 maxlength="80">
+          <label class="link-clickcount-format-label">
+            Format:
+            <select name="link-clickcount-format" title="Number format for {count}">
+              <option value="compact">Compact (1.2K)</option>
+              <option value="raw">Raw (1,234)</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </template>
+
+    <section id="instructions" hidden>
+      <h2>Almost there — next steps</h2>
+      <ol>
+        <li>Fork the template repo: <a href="https://github.com/NikoServes/nikoserves-linkinbio-template" target="_blank" rel="noopener">github.com/NikoServes/nikoserves-linkinbio-template</a></li>
+        <li>Save the downloaded <code>config.json</code> at the root of your fork (replacing the existing one).</li>
+        <li>Replace <code>/images/avatar-placeholder.svg</code> with your photo (and <code>/images/avatar.png</code> for the favicon).</li>
+        <li>Commit and push.</li>
+        <li>Connect a Cloudflare Pages project to your fork (framework: None, build command: empty, output: <code>/</code>).</li>
+        <li>Add your custom domain via Pages → Settings → Custom domains.</li>
+      </ol>
+    </section>
+
+  </div>
+
+  <script src="/setup/wizard.js" defer></script>
+
+</body>
+</html>

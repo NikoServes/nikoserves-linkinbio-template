@@ -61,6 +61,15 @@ If you have access to the GitHub repo, you can edit it through the web interface
 
 Your operator can simplify this two-file workflow for you if it becomes a pain — ask them.
 
+## Edit your whole config in the wizard (round-trip)
+
+Both wizards can *import* an existing config, so you can edit everything visually instead of hand-editing JSON.
+
+- **Setup wizard (`/setup`)** — use the **Import an existing config** fieldset at the top of the form. Either pick a saved `config.json` file from your computer, or click **Load my live config** to pull the config straight off your live site. Loading replaces everything currently in the form; edit the fields you want, then re-download `config.json` and commit it.
+- **Resources admin (`/resources-admin`)** — use the **Import a config file** fieldset to load a `config-resources.json` file. (This wizard already auto-loads your live config when it opens, so the file picker is mainly for loading a backup or a file you edited somewhere else.)
+
+If you load the wrong type of file — a resources config into the setup wizard, or a setup config into the resources admin — the wizard shows a clear inline error message and points you at the right tool, rather than breaking the form.
+
 ## What's the yearly domain fee?
 
 Your only ongoing cost is the domain renewal.
