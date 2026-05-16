@@ -431,8 +431,10 @@
         if (srcEl && sc.source) {
           srcEl.value = sc.source;
           if (srcEl.value !== sc.source) {
-            console.warn('[wizard] siteCounter.source "' + sc.source +
-              '" is not a preset option — set it manually after import.');
+            showImportError(
+              'The site counter source "' + sc.source.replace(/[<>"']/g, '') +
+              '" is not a preset option — set the Source dropdown manually after import.'
+            );
           }
         }
       }
