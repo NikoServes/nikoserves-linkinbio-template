@@ -16,6 +16,18 @@
       .replace(/'/g, '&#39;');
   }
 
+  // Sanitize a CSS color value before injecting into a srcdoc <style> block.
+  // Allows only: hex colors (#rgb, #rrggbb, #rrggbbaa), rgb/rgba(), hsl/hsla(),
+  // and plain named colors (letters only). Rejects anything else and returns fallback.
+  function sanitizeCssColor(val, fallback) {
+    if (!val || typeof val !== 'string') return fallback;
+    var clean = val.trim();
+    if (/^#[0-9a-fA-F]{3,8}$/.test(clean)) return clean;
+    if (/^(rgb|rgba|hsl|hsla)\([^)]*\)$/.test(clean)) return clean;
+    if (/^[a-zA-Z]+$/.test(clean)) return clean; // named color e.g. "white"
+    return fallback;
+  }
+
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $$(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
 
@@ -638,9 +650,9 @@
       abVars =
         '--avatar-border-thickness:' + abThick + 'px;' +
         '--avatar-border-focal:' + abFocal + ';' +
-        '--avatar-border-solid:' + (ab.solidColor || '#00e5ff') + ';' +
-        '--avatar-border-grad-from:' + (ab.gradientFrom || '#00e5ff') + ';' +
-        '--avatar-border-grad-to:' + (ab.gradientTo || '#ffffff') + ';';
+        '--avatar-border-solid:' + sanitizeCssColor(ab.solidColor, '#00e5ff') + ';' +
+        '--avatar-border-grad-from:' + sanitizeCssColor(ab.gradientFrom, '#00e5ff') + ';' +
+        '--avatar-border-grad-to:' + sanitizeCssColor(ab.gradientTo, '#ffffff') + ';';
     }
 
     // Phase 9.3 — Font: when a curated font is selected, inject Google Fonts <link> into preview
